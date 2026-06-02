@@ -1,0 +1,33 @@
+﻿@model Beatly.Models.SocialMediaViewModel
+
+<div class="profile-container" style="background-color: #12141c; padding: 24px; border-radius: 16px; max-width: 400px; color: #ffffff; font-family: 'Inter', sans-serif;">
+    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 24px;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+        </svg>
+        <h3 style="margin: 0; font-size: 18px; font-weight: 600;">Социальные сети</h3>
+    </div>
+
+    <form asp-action="SocialMedia" method="post">
+        <div style="margin-bottom: 16px;">
+            <label asp-for="InstagramUrl" style="display: block; margin-bottom: 8px; color: #8e8e93; font-size: 14px;">Instagram</label>
+            <input asp-for="InstagramUrl" placeholder="https://instagram.com/username" style="width: 100%; background-color: #1c1e26; border: 1px solid #2c2e38; border-radius: 12px; padding: 12px; color: #ffffff; box-sizing: border-box; outline: none;" />
+            <span asp-validation-for="InstagramUrl" style="color: #ff453a; font-size: 12px; display: block; margin-top: 4px;"></span>
+        </div>
+
+        <div style="margin-bottom: 24px;">
+            <label asp-for="TelegramUrl" style="display: block; margin-bottom: 8px; color: #8e8e93; font-size: 14px;">Telegram</label>
+            <input asp-for="TelegramUrl" placeholder="https://t.me/username" style="width: 100%; background-color: #1c1e26; border: 1px solid #2c2e38; border-radius: 12px; padding: 12px; color: #ffffff; box-sizing: border-box; outline: none;" />
+            <span asp-validation-for="TelegramUrl" style="color: #ff453a; font-size: 12px; display: block; margin-top: 4px;"></span>
+        </div>
+
+        <button type="submit" style="width: 100%; background-color: #0071e3; color: #ffffff; border: none; border-radius: 12px; padding: 14px; font-size: 16px; font-weight: 600; cursor: pointer; transition: background-color 0.2s;">
+            Сохранить ссылки
+        </button>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,1 @@
+﻿UPDATE Tracks SET IsLiked = 0;

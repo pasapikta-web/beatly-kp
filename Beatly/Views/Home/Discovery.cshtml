@@ -1,0 +1,203 @@
+﻿@{
+    ViewData["Title"] = "Обзор";
+}
+
+<div class="p-8 text-white min-h-screen">
+    <h1 class="text-4xl font-bold mb-8">Обзор</h1>
+
+    <h2 class="text-xl font-bold mb-6">Настроение</h2>
+
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <a asp-action="Category" asp-route-type="Mood" asp-route-name="Релакс" class="relative rounded-xl h-40 overflow-hidden cursor-pointer group block">
+            <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=400&q=80" alt="Релакс" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+            <div class="absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-20 transition"></div>
+            <div class="absolute inset-0 flex flex-col items-center justify-center text-white">
+                <span class="font-bold text-2xl drop-shadow-lg">Релакс</span>
+            </div>
+        </a>
+
+        <a asp-action="Category" asp-route-type="Mood" asp-route-name="Энергия" class="relative rounded-xl h-40 overflow-hidden cursor-pointer group block">
+            <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=400&q=80" alt="Энергия" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+            <div class="absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-20 transition"></div>
+            <div class="absolute inset-0 flex flex-col items-center justify-center text-white">
+                <span class="font-bold text-2xl drop-shadow-lg">Энергия</span>
+            </div>
+        </a>
+
+        <a asp-action="Category" asp-route-type="Mood" asp-route-name="Фокус" class="relative rounded-xl h-40 overflow-hidden cursor-pointer group block">
+            <img src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=400&q=80" alt="Фокус" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+            <div class="absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-20 transition"></div>
+            <div class="absolute inset-0 flex flex-col items-center justify-center text-white">
+                <span class="font-bold text-2xl drop-shadow-lg">Фокус</span>
+            </div>
+        </a>
+
+        <a asp-action="Category" asp-route-type="Mood" asp-route-name="Вечеринка" class="relative rounded-xl h-40 overflow-hidden cursor-pointer group block">
+            <img src="https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=400&q=80" alt="Вечеринка" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+            <div class="absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-20 transition"></div>
+            <div class="absolute inset-0 flex flex-col items-center justify-center text-white">
+                <span class="font-bold text-2xl drop-shadow-lg">Вечеринка</span>
+            </div>
+        </a>
+
+        <a asp-action="Category" asp-route-type="Mood" asp-route-name="Сон" class="relative rounded-xl h-40 overflow-hidden cursor-pointer group block">
+            <img src="https://images.unsplash.com/photo-1511295742362-92c96b1cf484?auto=format&fit=crop&w=400&q=80" alt="Сон" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+            <div class="absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-20 transition"></div>
+            <div class="absolute inset-0 flex flex-col items-center justify-center text-white">
+                <span class="font-bold text-2xl drop-shadow-lg">Сон</span>
+            </div>
+        </a>
+
+        <a asp-action="Category" asp-route-type="Mood" asp-route-name="Спорт" class="relative rounded-xl h-40 overflow-hidden cursor-pointer group block">
+            <img src="https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=400&q=80" alt="Спорт" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+            <div class="absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-20 transition"></div>
+            <div class="absolute inset-0 flex flex-col items-center justify-center text-white">
+                <span class="font-bold text-2xl drop-shadow-lg">Sport</span>
+            </div>
+        </a>
+
+        <a asp-action="Category" asp-route-type="Mood" asp-route-name="Романтика" class="relative rounded-xl h-40 overflow-hidden cursor-pointer group block">
+            <img src="https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=400&q=80" alt="Романтика" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+            <div class="absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-20 transition"></div>
+            <div class="absolute inset-0 flex flex-col items-center justify-center text-white">
+                <span class="font-bold text-2xl drop-shadow-lg">Романтика</span>
+            </div>
+        </a>
+
+        <a asp-action="Category" asp-route-type="Mood" asp-route-name="Дорога" class="relative rounded-xl h-40 overflow-hidden cursor-pointer group block">
+            <img src="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=400&q=80" alt="Дорога" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+            <div class="absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-20 transition"></div>
+            <div class="absolute inset-0 flex flex-col items-center justify-center text-white">
+                <span class="font-bold text-2xl drop-shadow-lg">Дорога</span>
+            </div>
+        </a>
+
+        <a asp-action="Category" asp-route-type="Mood" asp-route-name="Гейминг" class="relative rounded-xl h-40 overflow-hidden cursor-pointer group block">
+            <img src="https://images.unsplash.com/photo-1538481199705-c710c4e965fc?auto=format&fit=crop&w=400&q=80" alt="Гейминг" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+            <div class="absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-20 transition"></div>
+            <div class="absolute inset-0 flex flex-col items-center justify-center text-white">
+                <span class="font-bold text-2xl drop-shadow-lg">Гейминг</span>
+            </div>
+        </a>
+
+        <a asp-action="Category" asp-route-type="Mood" asp-route-name="Меланхолия" class="relative rounded-xl h-40 overflow-hidden cursor-pointer group block">
+            <img src="https://images.unsplash.com/photo-1428908728789-d2de25dbd4e2?auto=format&fit=crop&w=400&q=80" alt="Меланхолия" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+            <div class="absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-20 transition"></div>
+            <div class="absolute inset-0 flex flex-col items-center justify-center text-white">
+                <span class="font-bold text-2xl drop-shadow-lg">Меланхолия</span>
+            </div>
+        </a>
+
+        <a asp-action="Category" asp-route-type="Mood" asp-route-name="Утро" class="relative rounded-xl h-40 overflow-hidden cursor-pointer group block">
+            <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=400&q=80" alt="Утро" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+            <div class="absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-20 transition"></div>
+            <div class="absolute inset-0 flex flex-col items-center justify-center text-white">
+                <span class="font-bold text-2xl drop-shadow-lg">Утро</span>
+            </div>
+        </a>
+
+        <a asp-action="Category" asp-route-type="Mood" asp-route-name="Чилл" class="relative rounded-xl h-40 overflow-hidden cursor-pointer group block">
+            <img src="https://images.unsplash.com/photo-1499810631641-541e76d678a2?auto=format&fit=crop&w=400&q=80" alt="Чилл" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+            <div class="absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-20 transition"></div>
+            <div class="absolute inset-0 flex flex-col items-center justify-center text-white">
+                <span class="font-bold text-2xl drop-shadow-lg">Чилл</span>
+            </div>
+        </a>
+
+        <a asp-action="Category" asp-route-type="Mood" asp-route-name="Медитация" class="relative rounded-xl h-40 overflow-hidden cursor-pointer group block">
+            <img src="https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=400&q=80" alt="Медитация" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+            <div class="absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-20 transition"></div>
+            <div class="absolute inset-0 flex flex-col items-center justify-center text-white">
+                <span class="font-bold text-2xl drop-shadow-lg">Медитация</span>
+            </div>
+        </a>
+
+        <a asp-action="Category" asp-route-type="Mood" asp-route-name="Вдохновение" class="relative rounded-xl h-40 overflow-hidden cursor-pointer group block">
+            <img src="https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=400&q=80" alt="Вдохновение" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+            <div class="absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-20 transition"></div>
+            <div class="absolute inset-0 flex flex-col items-center justify-center text-white">
+                <span class="font-bold text-2xl drop-shadow-lg">Вдохновение</span>
+            </div>
+        </a>
+
+        <a asp-action="Category" asp-route-type="Mood" asp-route-name="Ностальгия" class="relative rounded-xl h-40 overflow-hidden cursor-pointer group block">
+            <img src="https://images.unsplash.com/photo-1516280440614-37939bbacd6a?auto=format&fit=crop&w=400&q=80" alt="Ностальгия" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+            <div class="absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-20 transition"></div>
+            <div class="absolute inset-0 flex flex-col items-center justify-center text-white">
+                <span class="font-bold text-2xl drop-shadow-lg">Ностальгия</span>
+            </div>
+        </a>
+
+        <a asp-action="Category" asp-route-type="Mood" asp-route-name="Природа" class="relative rounded-xl h-40 overflow-hidden cursor-pointer group block">
+            <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=400&q=80" alt="Природа" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+            <div class="absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-20 transition"></div>
+            <div class="absolute inset-0 flex flex-col items-center justify-center text-white">
+                <span class="font-bold text-2xl drop-shadow-lg">Природа</span>
+            </div>
+        </a>
+
+        <a asp-action="Category" asp-route-type="Mood" asp-route-name="Ночь" class="relative rounded-xl h-40 overflow-hidden cursor-pointer group block">
+            <img src="https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?auto=format&fit=crop&w=400&q=80" alt="Ночь" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+            <div class="absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-20 transition"></div>
+            <div class="absolute inset-0 flex flex-col items-center justify-center text-white">
+                <span class="font-bold text-2xl drop-shadow-lg">Ночь</span>
+            </div>
+        </a>
+
+        <a asp-action="Category" asp-route-type="Mood" asp-route-name="Драйв" class="relative rounded-xl h-40 overflow-hidden cursor-pointer group block">
+            <img src="https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=400&q=80" alt="Драйв" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+            <div class="absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-20 transition"></div>
+            <div class="absolute inset-0 flex flex-col items-center justify-center text-white">
+                <span class="font-bold text-2xl drop-shadow-lg">Драйв</span>
+            </div>
+        </a>
+
+        <a asp-action="Category" asp-route-type="Mood" asp-route-name="Закат" class="relative rounded-xl h-40 overflow-hidden cursor-pointer group block">
+            <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80" alt="Закат" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+            <div class="absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-20 transition"></div>
+            <div class="absolute inset-0 flex flex-col items-center justify-center text-white">
+                <span class="font-bold text-2xl drop-shadow-lg">Закат</span>
+            </div>
+        </a>
+
+        <a asp-action="Category" asp-route-type="Mood" asp-route-name="Мечты" class="relative rounded-xl h-40 overflow-hidden cursor-pointer group block">
+            <img src="https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?auto=format&fit=crop&w=400&q=80" alt="Мечты" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+            <div class="absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-20 transition"></div>
+            <div class="absolute inset-0 flex flex-col items-center justify-center text-white">
+                <span class="font-bold text-2xl drop-shadow-lg">Мечты</span>
+            </div>
+        </a>
+
+        <a asp-action="Category" asp-route-type="Mood" asp-route-name="Лето" class="relative rounded-xl h-40 overflow-hidden cursor-pointer group block">
+            <img src="https://images.unsplash.com/photo-1506929562872-bb421503ef21?auto=format&fit=crop&w=400&q=80" alt="Лето" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+            <div class="absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-20 transition"></div>
+            <div class="absolute inset-0 flex flex-col items-center justify-center text-white">
+                <span class="font-bold text-2xl drop-shadow-lg">Лето</span>
+            </div>
+        </a>
+
+        <a asp-action="Category" asp-route-type="Mood" asp-route-name="Зима" class="relative rounded-xl h-40 overflow-hidden cursor-pointer group block">
+            <img src="https://images.unsplash.com/photo-1483921020237-2ff51e8e4b22?auto=format&fit=crop&w=400&q=80" alt="Зима" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+            <div class="absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-20 transition"></div>
+            <div class="absolute inset-0 flex flex-col items-center justify-center text-white">
+                <span class="font-bold text-2xl drop-shadow-lg">Зима</span>
+            </div>
+        </a>
+
+        <a asp-action="Category" asp-route-type="Mood" asp-route-name="Творчество" class="relative rounded-xl h-40 overflow-hidden cursor-pointer group block">
+            <img src="https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&w=400&q=80" alt="Творчество" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+            <div class="absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-20 transition"></div>
+            <div class="absolute inset-0 flex flex-col items-center justify-center text-white">
+                <span class="font-bold text-2xl drop-shadow-lg">Творчество</span>
+            </div>
+        </a>
+
+        <a asp-action="Category" asp-route-type="Mood" asp-route-name="Уют" class="relative rounded-xl h-40 overflow-hidden cursor-pointer group block">
+            <img src="https://images.unsplash.com/photo-1545048702-79362596cdc9?auto=format&fit=crop&w=400&q=80" alt="Уют" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+            <div class="absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-20 transition"></div>
+            <div class="absolute inset-0 flex flex-col items-center justify-center text-white">
+                <span class="font-bold text-2xl drop-shadow-lg">Уют</span>
+            </div>
+        </a>
+    </div>
+</div>

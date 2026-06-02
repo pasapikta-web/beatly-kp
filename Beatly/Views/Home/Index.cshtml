@@ -1,0 +1,50 @@
+﻿@model IEnumerable<Beatly.Models.Track>
+@{
+    ViewData["Title"] = "Главная";
+}
+
+<section class="relative h-64 rounded-3xl overflow-hidden mb-10 group">
+    <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=1200" class="w-full h-full object-cover brightness-50 group-hover:scale-105 transition duration-700" />
+    <div class="absolute inset-0 p-10 flex flex-col justify-end">
+        <span class="bg-[#499BED] text-xs font-bold px-3 py-1 rounded-full w-max mb-4">НОВЫЙ РЕЛИЗ</span>
+        <h2 class="text-5xl font-black mb-2">Midnight Synth</h2>
+        <p class="text-gray-300">Погрузитесь в атмосферу ночного города</p>
+    </div>
+</section>
+
+<h3 class="text-2xl font-bold mb-6">Популярные треки</h3>
+
+<div class="space-y-2">
+    @foreach (var track in Model)
+    {
+    
+        <div class="grid grid-cols-[auto_1fr_auto] items-center gap-4 p-4 rounded-xl hover:bg-white/5 transition group cursor-pointer"
+             onclick="playTrack('@track.AudioUrl', '@track.Title', '@track.Artist', '@track.CoverUrl')">
+
+            <span class="text-gray-500 group-hover:hidden w-6">@track.Id</span>
+            <span class="material-symbols-outlined text-[#499BED] hidden group-hover:block w-6">play_arrow</span>
+
+            <div class="flex items-center gap-4">
+                <img src="@track.CoverUrl" class="w-12 h-12 rounded-lg object-cover" />
+                <div>
+                    <div class="font-bold">@track.Title</div>
+                    <div class="text-sm text-gray-400">@track.Artist</div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-8">
+                <span class="text-sm text-gray-500 hidden md:block">@track.Album</span>
+
+                <div class="flex items-center gap-4">
+                    @* Объединенная кнопка с типом button *@
+                    <button type="button" onclick="event.stopPropagation(); toggleLike(@track.Id, this)" class="like-btn flex items-center justify-center transition hover:scale-110">
+                        <span class="material-symbols-outlined @(track.IsLiked ? "text-red-500 fill-1" : "text-gray-400")">
+                            favorite
+                        </span>
+                    </button>
+                    <span class="text-sm text-gray-500 w-10">@track.Duration</span>
+                </div>
+            </div>
+        </div>
+    }
+</div>

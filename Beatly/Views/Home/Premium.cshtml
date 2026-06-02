@@ -1,0 +1,354 @@
+﻿@model Beatly.Models.SubscriptionViewModel
+
+@{
+    ViewData["Title"] = "Premium подписка";
+}
+
+<div class="max-w-6xl mx-auto space-y-20 pb-20">
+    @if (Model != null && Model.IsActive)
+    {
+        <div class="rounded-3xl border border-amber-500/30 bg-gradient-to-r from-[#022E5B] to-[#101419] p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl shadow-amber-500/5">
+            <div class="space-y-2">
+                <div class="flex items-center gap-2 text-amber-400 font-bold">
+                    <span class="material-symbols-outlined fill-1">workspace_premium</span>
+                    <span>Ваш Premium статус активен</span>
+                </div>
+                <h2 class="text-2xl font-black text-white">Тариф: @Model.PlanName</h2>
+                <p class="text-sm text-gray-400">Дата окончания подписки: @(Model.EndDate?.ToLocalTime().ToString("dd.MM.yyyy HH:mm") ?? "—")</p>
+            </div>
+            <form asp-action="CancelSubscription" method="post">
+                <button type="submit" class="px-6 py-3 rounded-full border border-red-500/30 text-red-400 hover:bg-red-500/10 transition font-bold text-sm">
+                    Отменить подписку
+                </button>
+            </form>
+        </div>
+    }
+    else
+    {
+        <section class="relative rounded-3xl overflow-hidden bg-gradient-to-br from-[#022E5B] to-[#101419] p-12 flex flex-col md:flex-row items-center gap-10 border border-white/5 shadow-2xl">
+            <div class="flex-1 space-y-6 text-center md:text-left">
+                <div class="inline-block px-4 py-1 rounded-full bg-[#499BED]/20 text-[#499BED] text-xs font-bold uppercase tracking-widest">Ограниченное предложение</div>
+                <h1 class="text-5xl md:text-6xl font-black text-white leading-tight">Музыка без границ. <br /><span class="text-[#499BED]">3 месяца бесплатно.</span></h1>
+                <p class="text-gray-400 text-lg max-w-xl">Слушайте любимые треки в высоком качестве, без рекламы и в режиме офлайн. Отмените подписку в любое время.</p>
+                <div class="flex flex-wrap gap-4 justify-center md:justify-start">
+                    <button onclick="openPaymentModal('Индивидуальная', 199)" class="bg-[#499BED] hover:bg-[#3d85cc] text-white px-8 py-4 rounded-full font-black transition transform hover:scale-105 shadow-lg shadow-[#499BED]/20">Попробовать бесплатно</button>
+                    <button onclick="scrollToPlans()" class="bg-transparent border border-white/20 hover:border-white/40 text-white px-8 py-4 rounded-full font-black transition">Посмотреть планы</button>
+                </div>
+                <p class="text-[10px] text-gray-500">Только для новых пользователей. После пробного периода — 199 ₽ в месяц. Применяются Условия использования.</p>
+            </div>
+            <div class="w-64 h-64 md:w-80 md:h-80 relative flex items-center justify-center">
+                <div class="absolute inset-0 bg-[#499BED] rounded-full blur-[80px] opacity-20 animate-pulse"></div>
+                <span class="material-symbols-outlined text-[180px] text-[#499BED] fill-1 relative z-10">workspace_premium</span>
+            </div>
+        </section>
+    }
+
+    <section class="space-y-12">
+        <h2 class="text-3xl font-black text-white text-center">Почему Beatly Premium?</h2>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div class="text-center space-y-4 p-6">
+                <span class="material-symbols-outlined text-4xl text-[#499BED]">block</span>
+                <h3 class="font-bold text-white">Никакой рекламы</h3>
+                <p class="text-sm text-gray-400">Наслаждайтесь музыкой без перерывов на рекламные ролики.</p>
+            </div>
+            <div class="text-center space-y-4 p-6">
+                <span class="material-symbols-outlined text-4xl text-[#499BED]">download_for_offline</span>
+                <h3 class="font-bold text-white">Офлайн-режим</h3>
+                <p class="text-sm text-gray-400">Скачивайте треки и слушайте их в любом месте без интернета.</p>
+            </div>
+            <div class="text-center space-y-4 p-6">
+                <span class="material-symbols-outlined text-4xl text-[#499BED]">high_quality</span>
+                <h3 class="font-bold text-white">Звук Lossless</h3>
+                <p class="text-sm text-gray-400">Почувствуйте каждую ноту с качеством аудио высокого разрешения.</p>
+            </div>
+            <div class="text-center space-y-4 p-6">
+                <span class="material-symbols-outlined text-4xl text-[#499BED]">volunteer_activism</span>
+                <h3 class="font-bold text-white">Поддержка артистов</h3>
+                <p class="text-sm text-gray-400">Большая часть средств идет напрямую независимым авторам.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="plans-section" class="space-y-10">
+        <div class="text-center space-y-4">
+            <h2 class="text-3xl font-black text-white">Выберите свой план</h2>
+            <p class="text-gray-400">Слушайте как хотите и где хотите на любом устройстве.</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-end">
+            <div class="bg-[#1c1f26] border border-white/5 rounded-3xl p-8 flex flex-col hover:border-[#499BED]/30 transition group justify-between h-full">
+                <div>
+                    <h3 class="text-2xl font-black text-white mb-2">Индивидуальная</h3>
+                    <p class="text-gray-400 text-sm mb-4">1 аккаунт</p>
+                    <div class="h-px bg-white/5 w-full mb-4"></div>
+                    <p class="text-white font-bold mb-6">199 ₽ / месяц</p>
+                    <ul class="space-y-4 mb-8 text-sm text-gray-300">
+                        <li class="flex items-start gap-3"><span class="material-symbols-outlined text-[#499BED] text-lg">check</span> Музыка без рекламы</li>
+                        <li class="flex items-start gap-3"><span class="material-symbols-outlined text-[#499BED] text-lg">check</span> Слушайте где угодно — даже офлайн</li>
+                        <li class="flex items-start gap-3"><span class="material-symbols-outlined text-[#499BED] text-lg">check</span> Потоковая передача в Lossless</li>
+                    </ul>
+                </div>
+                <button onclick="openPaymentModal('Индивидуальная', 199)" class="w-full bg-white text-black py-4 rounded-full font-black hover:bg-[#499BED] hover:text-white transition" @(Model != null && Model.IsActive ? "disabled" : "")>Выбрать</button>
+            </div>
+
+            <div class="bg-[#1c1f26] border-2 border-[#499BED] rounded-3xl p-8 flex flex-col relative shadow-2xl shadow-[#499BED]/10 justify-between h-full lg:min-h-[460px]">
+                <div class="absolute top-0 right-8 -translate-y-1/2 bg-[#499BED] text-white text-[10px] font-black px-4 py-1 rounded-full uppercase z-10">Популярно</div>
+                <div>
+                    <h3 class="text-2xl font-black text-white mb-2">Семейная</h3>
+                    <p class="text-gray-400 text-sm mb-4">До 6 аккаунтов</p>
+                    <div class="h-px bg-white/5 w-full mb-4"></div>
+                    <p class="text-white font-bold mb-6">299 ₽ / месяц</p>
+                    <ul class="space-y-4 mb-8 text-sm text-gray-300">
+                        <li class="flex items-start gap-3"><span class="material-symbols-outlined text-[#499BED] text-lg">check</span> 6 отдельных Premium-аккаунтов</li>
+                        <li class="flex items-start gap-3"><span class="material-symbols-outlined text-[#499BED] text-lg">check</span> Блокировка непристойного контента</li>
+                        <li class="flex items-start gap-3"><span class="material-symbols-outlined text-[#499BED] text-lg">check</span> Общий плейлист для всей семьи</li>
+                    </ul>
+                </div>
+                <button onclick="openPaymentModal('Семейная', 299)" class="w-full bg-[#499BED] text-white py-4 rounded-full font-black hover:bg-[#3d85cc] transition" @(Model != null && Model.IsActive ? "disabled" : "")>Выбрать</button>
+            </div>
+
+            <div class="bg-[#1c1f26] border border-white/5 rounded-3xl p-8 flex flex-col hover:border-[#499BED]/30 transition justify-between h-full">
+                <div>
+                    <h3 class="text-2xl font-black text-white mb-2">Студенческая</h3>
+                    <p class="text-gray-400 text-sm mb-4">1 аккаунт (скидка 50%)</p>
+                    <div class="h-px bg-white/5 w-full mb-4"></div>
+                    <p class="text-white font-bold mb-6">99 ₽ / месяц</p>
+                    <ul class="space-y-4 mb-8 text-sm text-gray-300">
+                        <li class="flex items-start gap-3"><span class="material-symbols-outlined text-[#499BED] text-lg">check</span> Специальная скидка для студентов</li>
+                        <li class="flex items-start gap-3"><span class="material-symbols-outlined text-[#499BED] text-lg">check</span> Все преимущества Premium</li>
+                        <li class="flex items-start gap-3"><span class="material-symbols-outlined text-[#499BED] text-lg">check</span> Доступ к эксклюзивным лекциям</li>
+                    </ul>
+                </div>
+                <button onclick="openPaymentModal('Студенческая', 99)" class="w-full bg-white text-black py-4 rounded-full font-black hover:bg-[#499BED] hover:text-white transition" @(Model != null && Model.IsActive ? "disabled" : "")>Выбрать</button>
+            </div>
+        </div>
+    </section>
+
+    <section class="max-w-3xl mx-auto space-y-8">
+        <h2 class="text-3xl font-black text-white text-center">Частые вопросы</h2>
+        <div class="space-y-4">
+            <div class="bg-[#1c1f26] rounded-2xl p-6 cursor-pointer group" onclick="toggleFaq(this)">
+                <div class="flex justify-between items-center">
+                    <h4 class="font-bold text-white">Как работает пробный период?</h4>
+                    <span class="material-symbols-outlined transition">expand_more</span>
+                </div>
+                <p class="mt-4 text-sm text-gray-400 hidden">Вы получаете полный доступ ко всем функциям Premium на 30 или 90 дней бесплатно. Мы напомним вам за 7 дней до окончания периода.</p>
+            </div>
+            <div class="bg-[#1c1f26] rounded-2xl p-6 cursor-pointer group" onclick="toggleFaq(this)">
+                <div class="flex justify-between items-center">
+                    <h4 class="font-bold text-white">Можно ли отменить подписку?</h4>
+                    <span class="material-symbols-outlined transition">expand_more</span>
+                </div>
+                <p class="mt-4 text-sm text-gray-400 hidden">Да, вы можете отменить подписку в настройках профиля в любое время. Вы сохраните доступ к Premium до конца оплаченного периода.</p>
+            </div>
+            <div class="bg-[#1c1f26] rounded-2xl p-6 cursor-pointer group" onclick="toggleFaq(this)">
+                <div class="flex justify-between items-center">
+                    <h4 class="font-bold text-white">Что такое качество Lossless?</h4>
+                    <span class="material-symbols-outlined transition">expand_more</span>
+                </div>
+                <p class="mt-4 text-sm text-gray-400 hidden">Это формат аудио без потерь, который сохраняет все детали оригинальной студийной записи. Звук будет чище и глубже.</p>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div id="payment-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden items-center justify-center z-[100] p-4">
+    <div class="bg-[#1c1f26] border border-white/10 w-full max-w-md rounded-2xl p-6 relative shadow-2xl">
+        <button onclick="closePaymentModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white transition">
+            <span class="material-symbols-outlined">close</span>
+        </button>
+        <h3 class="text-xl font-black text-white mb-1">Оформление подписки</h3>
+        <p id="modal-plan-info" class="text-sm text-gray-400 mb-6"></p>
+
+        <form id="payment-form" onsubmit="submitPayment(event)" class="space-y-4">
+            <input type="hidden" id="modal-plan-name" name="planName" />
+            <input type="hidden" id="modal-plan-price" name="price" />
+
+            <div class="space-y-1">
+                <label class="text-xs font-bold text-gray-400 uppercase tracking-wider">Номер карты</label>
+                <div class="relative">
+                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">credit_card</span>
+                    <input type="text" id="card-number" required placeholder="0000 0000 0000 0000" class="w-full bg-[#101419] border border-white/5 rounded-xl pl-10 pr-4 py-3 text-sm text-white focus:border-[#499BED] focus:ring-1 focus:ring-[#499BED] outline-none transition" />
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-gray-400 uppercase tracking-wider">Срок действия</label>
+                    <input type="text" id="card-expiry" required placeholder="MM/YY" class="w-full bg-[#101419] border border-white/5 rounded-xl px-4 py-3 text-sm text-white focus:border-[#499BED] focus:ring-1 focus:ring-[#499BED] text-center outline-none transition" />
+                </div>
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-gray-400 uppercase tracking-wider">CVV</label>
+                    <input type="password" id="card-cvv" required placeholder="•••" class="w-full bg-[#101419] border border-white/5 rounded-xl px-4 py-3 text-sm text-white focus:border-[#499BED] focus:ring-1 focus:ring-[#499BED] text-center outline-none transition" />
+                </div>
+            </div>
+
+            <button type="submit" class="w-full bg-[#499BED] hover:bg-[#3d85cc] text-white py-3.5 rounded-full font-bold transition mt-4 shadow-lg shadow-[#499BED]/20">
+                Оплатить
+            </button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function scrollToPlans() {
+            document.getElementById('plans-section').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function toggleFaq(element) {
+            const p = element.querySelector('p');
+            const icon = element.querySelector('span');
+            if (p.classList.contains('hidden')) {
+                p.classList.remove('hidden');
+                icon.style.transform = 'rotate(180deg)';
+            } else {
+                p.classList.add('hidden');
+                icon.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        function openPaymentModal(planName, price) {
+            document.getElementById('modal-plan-name').value = planName;
+            document.getElementById('modal-plan-price').value = price;
+            document.getElementById('modal-plan-info').innerText = 'Тариф: ' + planName + ' • ' + price + ' ₽ / мес.';
+            document.getElementById('payment-modal').style.display = 'flex';
+        }
+
+        function closePaymentModal() {
+            document.getElementById('payment-modal').style.display = 'none';
+            document.getElementById('payment-form').reset();
+
+            const inputs = ['card-number', 'card-expiry', 'card-cvv'];
+            inputs.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.classList.remove('border-red-500', 'focus:border-red-500', 'focus:ring-red-500');
+                    el.classList.add('border-white/5', 'focus:border-[#499BED]', 'focus:ring-[#499BED]');
+                }
+            });
+        }
+
+        function toggleInputStyle(input, isValid) {
+            if (!input) return;
+            if (isValid) {
+                input.classList.remove('border-red-500', 'focus:border-red-500', 'focus:ring-red-500');
+                input.classList.add('border-white/5', 'focus:border-[#499BED]', 'focus:ring-[#499BED]');
+            } else {
+                input.classList.remove('border-white/5', 'focus:border-[#499BED]', 'focus:ring-[#499BED]');
+                input.classList.add('border-red-500', 'focus:border-red-500', 'focus:ring-red-500');
+            }
+        }
+
+        const cardNumberInput = document.getElementById('card-number');
+        if (cardNumberInput) {
+            cardNumberInput.addEventListener('input', (e) => {
+                let value = e.target.value.replace(/\D/g, '');
+                let formatted = value.match(/.{1,4}/g)?.join(' ') || '';
+                e.target.value = formatted.substring(0, 19);
+                toggleInputStyle(e.target, value.length === 16);
+            });
+            cardNumberInput.addEventListener('blur', (e) => {
+                const value = e.target.value.replace(/\D/g, '');
+                toggleInputStyle(e.target, value.length === 16);
+            });
+        }
+
+        const cardExpiryInput = document.getElementById('card-expiry');
+        if (cardExpiryInput) {
+            cardExpiryInput.addEventListener('input', (e) => {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length > 2) {
+                    value = value.substring(0, 2) + '/' + value.substring(2, 4);
+                }
+                e.target.value = value.substring(0, 5);
+                validateExpiryElement(e.target);
+            });
+            cardExpiryInput.addEventListener('blur', (e) => {
+                validateExpiryElement(e.target);
+            });
+        }
+
+        function validateExpiryElement(input) {
+            if (!input) return false;
+            const value = input.value;
+            if (!/^\d{2}\/\d{2}$/.test(value)) {
+                toggleInputStyle(input, false);
+                return false;
+            }
+            const parts = value.split('/');
+            const month = parseInt(parts[0], 10);
+            const year = parseInt('20' + parts[1], 10);
+
+            if (month < 1 || month > 12) {
+                toggleInputStyle(input, false);
+                return false;
+            }
+
+            const now = new Date();
+            const currentMonth = now.getMonth() + 1;
+            const currentYear = now.getFullYear();
+
+            const isValid = year > currentYear || (year === currentYear && month >= currentMonth);
+            toggleInputStyle(input, isValid);
+            return isValid;
+        }
+
+        const cardCvvInput = document.getElementById('card-cvv');
+        if (cardCvvInput) {
+            cardCvvInput.addEventListener('input', (e) => {
+                let value = e.target.value.replace(/\D/g, '');
+                e.target.value = value.substring(0, 3);
+                toggleInputStyle(e.target, value.length === 3);
+            });
+            cardCvvInput.addEventListener('blur', (e) => {
+                let value = e.target.value.replace(/\D/g, '');
+                toggleInputStyle(e.target, value.length === 3);
+            });
+        }
+
+        function submitPayment(e) {
+            e.preventDefault();
+
+            if (!cardNumberInput || !cardExpiryInput || !cardCvvInput) return;
+
+            const cardDigits = cardNumberInput.value.replace(/\D/g, '');
+            const isCardValid = cardDigits.length === 16;
+            toggleInputStyle(cardNumberInput, isCardValid);
+
+            const isExpiryValid = validateExpiryElement(cardExpiryInput);
+
+            const cvvDigits = cardCvvInput.value.replace(/\D/g, '');
+            const isCvvValid = cvvDigits.length === 3;
+            toggleInputStyle(cardCvvInput, isCvvValid);
+
+            if (!isCardValid || !isExpiryValid || !isCvvValid) {
+                return;
+            }
+
+            const planName = document.getElementById('modal-plan-name').value;
+            const price = document.getElementById('modal-plan-price').value;
+
+            const formData = new FormData();
+            formData.append('planName', planName);
+            formData.append('price', price);
+            formData.append('cardNumber', cardDigits);
+            formData.append('expiry', cardExpiryInput.value);
+            formData.append('cvv', cvvDigits);
+
+            fetch('/Home/ProcessPayment', {
+                method: 'POST',
+                body: formData
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        closePaymentModal();
+                        window.location.reload();
+                    } else {
+                        alert(data.message);
+                    }
+                });
+        }
+    </script>
+}

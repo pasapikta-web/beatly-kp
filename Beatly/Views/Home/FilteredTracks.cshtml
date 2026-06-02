@@ -1,0 +1,60 @@
+﻿
+@model IEnumerable<Beatly.Models.Track>
+@{
+    ViewData["Title"] = ViewBag.CategoryName;
+}
+
+<div class="mb-8">
+    <h1 class="text-4xl font-black text-white">@ViewBag.CategoryName</h1>
+</div>
+
+@if (Model != null && Model.Any())
+{
+    <div class="space-y-1">
+        <div class="grid grid-cols-[40px_1fr_1fr_auto] gap-4 px-4 py-2 text-xs font-bold text-gray-500 uppercase tracking-wider">
+            <span>#</span>
+            <span>Название</span>
+            <span>Альбом</span>
+            <span class="material-symbols-outlined text-sm">schedule</span>
+        </div>
+
+        @foreach (var track in Model)
+        {
+            <div class="grid grid-cols-[40px_1fr_1fr_auto] items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition group cursor-pointer"
+                 onclick="playTrack('@track.AudioUrl', '@track.Title', '@track.Artist', '@track.CoverUrl')">
+
+                <div class="relative w-6 h-6">
+                    <span class="absolute inset-0 flex items-center justify-center text-gray-500 group-hover:opacity-0">@track.Id</span>
+                    <span class="material-symbols-outlined text-[#499BED] absolute inset-0 opacity-0 group-hover:opacity-100">play_arrow</span>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <img src="@track.CoverUrl" class="w-10 h-10 rounded shadow-md object-cover" />
+                    <div>
+                        <div class="font-bold text-sm text-white">@track.Title</div>
+                        <div class="text-xs text-gray-400 group-hover:text-white">@track.Artist</div>
+                    </div>
+                </div>
+
+                <div class="text-sm text-gray-400 truncate">@track.Album</div>
+
+                <div class="flex items-center gap-4">
+                    <button type="button" onclick="event.stopPropagation(); toggleLike(@track.Id, this)" class="like-btn flex items-center justify-center transition hover:scale-110">
+                        <span class="material-symbols-outlined @(track.IsLiked ? "text-red-500 fill-1" : "text-gray-400")">
+                            favorite
+                        </span>
+                    </button>
+                    <span class="text-sm text-gray-500 font-mono">@track.Duration</span>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="flex flex-col items-center justify-center py-20 text-center">
+        <span class="material-symbols-outlined text-6xl text-gray-700 mb-4">music_note</span>
+        <h2 class="text-2xl font-bold text-white">Здесь пока пусто</h2>
+        <p class="text-gray-400 mt-2">В этой категории еще нет треков.</p>
+    </div>
+}

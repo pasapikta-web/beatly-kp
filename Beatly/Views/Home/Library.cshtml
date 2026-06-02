@@ -1,0 +1,108 @@
+﻿@model Beatly.Models.LibraryViewModel
+
+@{
+    ViewData["Title"] = "Моя медиатека";
+}
+
+<div class="flex items-center justify-between mb-8">
+    <h1 class="text-4xl font-black text-white">Медиатека</h1>
+    <button class="flex items-center gap-2 bg-[#499BED] hover:bg-[#357abd] text-white px-6 py-2 rounded-full font-bold transition">
+        <span class="material-symbols-outlined text-sm">add</span> Создать плейлист
+    </button>
+</div>
+
+<div class="flex gap-8 border-b border-white/5 mb-8">
+    <button class="pb-4 border-b-2 border-[#499BED] text-white font-bold">Треки</button>
+    <button class="pb-4 text-gray-500 hover:text-white transition font-bold">Альбомы</button>
+    <button class="pb-4 text-gray-500 hover:text-white transition font-bold">Исполнители</button>
+    <button class="pb-4 text-gray-500 hover:text-white transition font-bold">Подкасты</button>
+</div>
+
+@if (Model.Albums != null && Model.Albums.Any())
+{
+    <section class="mb-12">
+        <h3 class="text-xl font-bold text-gray-400 mb-6 flex items-center gap-2">
+            <span class="material-symbols-outlined">album</span> Избранные альбомы
+        </h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            @foreach (var album in Model.Albums)
+            {
+                <div class="bg-white/5 p-4 rounded-3xl border border-white/5 hover:bg-white/10 transition group cursor-pointer">
+                    <div class="aspect-square bg-[#499BED]/20 rounded-2xl flex items-center justify-center mb-3 overflow-hidden">
+                        @if (album.Any(t => !string.IsNullOrEmpty(t.CoverUrl)))
+                        {
+                            <img src="@album.First().CoverUrl" class="w-full h-full object-cover" />
+                        }
+                        else
+                        {
+                            <span class="material-symbols-outlined text-4xl text-[#499BED]">album</span>
+                        }
+                    </div>
+                    <p class="text-white font-bold truncate text-sm">@album.Key</p>
+                    <p class="text-gray-500 text-xs">@album.Count() треков</p>
+                </div>
+            }
+        </div>
+    </section>
+}
+
+<section>
+    <h3 class="text-xl font-bold text-gray-400 mb-6 flex items-center gap-2">
+        <span class="material-symbols-outlined">favorite</span> Любимые треки
+    </h3>
+
+    @if (Model.AllLikedTracks != null && Model.AllLikedTracks.Any())
+    {
+        <div class="space-y-1">
+            <div class="grid grid-cols-[40px_1fr_1fr_auto] gap-4 px-4 py-2 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                <span>#</span>
+                <span>Название</span>
+                <span>Альбом</span>
+                <span class="material-symbols-outlined text-sm">schedule</span>
+            </div>
+
+            @foreach (var track in Model.AllLikedTracks)
+            {
+                <div class="grid grid-cols-[40px_1fr_1fr_auto] items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition group cursor-pointer"
+                     onclick="playTrack('@track.AudioUrl', '@track.Title', '@track.Artist', '@track.CoverUrl')">
+
+                    <div class="relative w-6 h-6">
+                        <span class="absolute inset-0 flex items-center justify-center text-gray-500 group-hover:opacity-0">@track.Id</span>
+                        <span class="material-symbols-outlined text-[#499BED] absolute inset-0 opacity-0 group-hover:opacity-100">play_arrow</span>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <img src="@track.CoverUrl" class="w-10 h-10 rounded shadow-md object-cover" />
+                        <div>
+                            <div class="font-bold text-sm text-white">@track.Title</div>
+                            <div class="text-xs text-gray-400 group-hover:text-white">@track.Artist</div>
+                        </div>
+                    </div>
+
+                    <div class="text-sm text-gray-400 truncate">@track.Album</div>
+
+                    <div class="flex items-center gap-4">
+                        @* Новая кнопка лайка *@
+                        <button type="button" onclick="event.stopPropagation(); toggleLike(@track.Id, this)" class="like-btn flex items-center justify-center transition hover:scale-110">
+                            <span class="material-symbols-outlined @(track.IsLiked ? "text-red-500 fill-1" : "text-gray-400")">
+                                favorite
+                            </span>
+                        </button>
+
+                        <span class="text-sm text-gray-500 font-mono">@track.Duration</span>
+                        <span class="material-symbols-outlined text-gray-600 hover:text-white transition">more_horiz</span>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="flex flex-col items-center justify-center py-20 text-center">
+            <span class="material-symbols-outlined text-8xl text-gray-700 mb-4">library_music</span>
+            <h2 class="text-2xl font-bold text-white">Здесь пока пусто</h2>
+            <p class="text-gray-400 max-w-xs mx-auto mt-2">Добавляйте треки в медиатеку, нажимая на иконку сердечка.</p>
+            <a href="@Url.Action("Index", "Home")" class="mt-6 bg-white text-black px-8 py-2 rounded-full font-bold hover:bg-gray-200 transition">Найти музыку</a>
+        </div>
+    }
+</section>

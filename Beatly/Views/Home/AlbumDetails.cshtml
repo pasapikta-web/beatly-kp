@@ -1,0 +1,60 @@
+﻿@model Beatly.Models.AlbumDetailsViewModel
+@{
+    ViewData["Title"] = Model.Tracks?.FirstOrDefault()?.Album ?? "Альбом";
+}
+
+<div class="p-8 text-white min-h-screen">
+    <a asp-action="Albums" asp-controller="Home" class="inline-flex items-center gap-2 text-gray-400 hover:text-white mb-6 font-medium transition group">
+        <span class="material-symbols-outlined transition-transform group-hover:-translate-x-1">arrow_back</span>
+        Назад к альбомам
+    </a>
+
+    <div class="flex flex-col md:flex-row items-center gap-8 mb-10">
+        <img src="@(Model.Tracks?.FirstOrDefault()?.CoverUrl ?? "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400")" class="w-48 h-48 rounded-3xl shadow-2xl object-cover" />
+        <div>
+            <span class="text-xs font-bold text-[#499BED] uppercase tracking-wider">Альбом</span>
+            <h1 class="text-5xl font-black mt-2 mb-4">@(Model.Tracks?.FirstOrDefault()?.Album ?? "Неизвестный альбом")</h1>
+            <p class="text-gray-400">@(Model.Tracks?.FirstOrDefault()?.Artist ?? "Неизвестный исполнитель") • @(Model.Tracks?.Count() ?? 0) треков</p>
+        </div>
+    </div>
+
+    <div class="space-y-2">
+        @if (Model.Tracks != null && Model.Tracks.Any())
+        {
+            @foreach (var track in Model.Tracks)
+            {
+                <div class="grid grid-cols-[auto_1fr_auto] items-center gap-4 p-4 rounded-xl hover:bg-white/5 transition group cursor-pointer"
+                     data-audio="@track.AudioUrl"
+                     data-title="@track.Title"
+                     data-artist="@track.Artist"
+                     data-cover="@track.CoverUrl"
+                     onclick="window.playTrackFromElement(this)">
+
+                    <span class="text-gray-500 group-hover:hidden w-6">@track.Id</span>
+                    <span class="material-symbols-outlined text-[#499BED] hidden group-hover:block w-6">play_arrow</span>
+
+                    <div class="flex items-center gap-4">
+                        <img src="@track.CoverUrl" class="w-12 h-12 rounded-lg object-cover" />
+                        <div>
+                            <div class="font-bold">@track.Title</div>
+                            <div class="text-sm text-gray-400">@track.Artist</div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-8">
+                        <div class="flex items-center gap-4">
+                            <button type="button" onclick="event.stopPropagation(); toggleLike('@track.Id', this)" class="like-btn flex items-center justify-center transition hover:scale-110">
+                                <span class="material-symbols-outlined @(track.IsLiked ? "text-red-500 fill-1" : "text-gray-400")">favorite</span>
+                            </button>
+                            <span class="text-sm text-gray-500 w-10">@track.Duration</span>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="text-center py-20 text-gray-500">В этом альбоме нет треков.</div>
+        }
+    </div>
+</div>

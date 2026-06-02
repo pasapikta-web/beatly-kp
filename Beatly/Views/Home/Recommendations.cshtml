@@ -1,0 +1,33 @@
+﻿@{
+    ViewData["Title"] = "Рекомендации";
+}
+
+<div class="relative rounded-3xl overflow-hidden mb-10 bg-gradient-to-r from-[#022E5B] to-[#101419] p-10 flex items-center gap-8 border border-white/5">
+    <div class="w-48 h-48 bg-[#499BED] shadow-2xl rotate-3 flex items-center justify-center rounded-lg group-hover:rotate-0 transition">
+        <span class="material-symbols-outlined text-7xl text-white">magic_button</span>
+    </div>
+    <div>
+        <h1 class="text-6xl font-black mb-4">Discover Weekly</h1>
+        <p class="text-gray-400 mb-6">Ваш персональный микс новых треков. Обновляется каждый понедельник.</p>
+        <button class="bg-white text-black px-8 py-3 rounded-full font-bold flex items-center gap-2 hover:scale-105 transition">
+            <span class="material-symbols-outlined">play_arrow</span> Слушать всё
+        </button>
+    </div>
+</div>
+
+<h3 class="text-2xl font-bold mb-6">Сделано для вас</h3>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+    @for (int i = 1; i <= 4; i++)
+    {
+        <div class="bg-[#1c2025] p-5 rounded-3xl border border-white/5 hover:bg-[#272a30] transition cursor-pointer group">
+            <div class="relative mb-4 aspect-square bg-[#022E5B] rounded-2xl flex items-center justify-center">
+                <span class="material-symbols-outlined text-5xl text-[#499BED]">auto_awesome</span>
+                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition rounded-2xl">
+                    <span class="material-symbols-outlined text-white text-5xl">play_circle</span>
+                </div>
+            </div>
+            <h4 class="font-bold">Микс дня @i</h4>
+            <p class="text-xs text-gray-400">На основе ваших последних прослушиваний</p>
+        </div>
+    }
+</div>

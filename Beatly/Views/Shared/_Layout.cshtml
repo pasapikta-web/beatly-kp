@@ -1,0 +1,640 @@
+﻿@{
+    bool isPremium = User.Identity.IsAuthenticated && (User.HasClaim(c => c.Type == "Premium" && c.Value == "True") || User.IsInRole("Premium"));
+}
+<!DOCTYPE html>
+<html class="dark" lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Beatly</title>
+    <script src="https://unpkg.com/@@hotwired/turbo@@7.1.0/dist/turbo.es2017-umd.js"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <style>
+        body {
+        background-color: #101419;
+        color: #e0e2e9;
+        font-family: 'Be Vietnam Pro', sans-serif;
+        }
+
+        .active-link {
+        background: rgba(73, 155, 237, 0.1);
+        color: #499BED;
+        border-right: 4px solid #499BED;
+        }
+
+        ::-webkit-scrollbar {
+        width: 6px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+        background: #32353a;
+        border-radius: 10px;
+        }
+
+        .fill-1 {
+        font-variation-settings: 'FILL' 1;
+        }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+
+    <nav class="hidden md:flex w-[240px] flex-col pt-8 pb-4 border-r border-white/5 bg-[#022E5B] z-50">
+        <div class="px-6 mb-8 flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-[#499BED] flex items-center justify-center">
+                <span class="material-symbols-outlined text-white">headphones</span>
+            </div>
+            <h1 class="text-2xl font-black text-[#499BED]">Beatly</h1>
+        </div>
+
+        <div class="flex-1 space-y-1 px-2 overflow-y-auto">
+            <a href="@Url.Action("Index", "Home")" class="flex items-center gap-3 px-4 py-3 hover:bg-white/5 rounded-lg transition @(ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "active-link" : "")">
+                <span class="material-symbols-outlined">home</span> Главная
+            </a>
+            <a href="@Url.Action("Discovery", "Home")" class="flex items-center gap-3 px-4 py-3 hover:bg-white/5 rounded-lg transition @(ViewContext.RouteData.Values["Action"]?.ToString() == "Discovery" ? "active-link" : "")">
+                <span class="material-symbols-outlined">explore</span> Обзор
+            </a>
+            <a href="@Url.Action("Search", "Home")" class="flex items-center gap-3 px-4 py-3 hover:bg-white/5 rounded-lg transition @(ViewContext.RouteData.Values["Action"]?.ToString() == "Search" ? "active-link" : "")">
+                <span class="material-symbols-outlined">search</span> Поиск
+            </a>
+            <a href="@Url.Action("Favorites", "Home")" class="flex items-center gap-3 px-4 py-3 hover:bg-white/5 rounded-lg transition @(ViewContext.RouteData.Values["Action"]?.ToString() == "Favorites" ? "active-link" : "")">
+                <span class="material-symbols-outlined text-red-500">favorite</span> Любимые треки
+            </a>
+            <a href="@Url.Action("Create", "Home")" class="flex items-center gap-3 px-4 py-3 hover:bg-white/5 rounded-lg transition @(ViewContext.RouteData.Values["Action"]?.ToString() == "Create" ? "active-link" : "")">
+                <span class="material-symbols-outlined">add_circle</span> Добавить трек
+            </a>
+            <div class="px-4 mt-8 mb-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Медиатека</div>
+            <a href="@Url.Action("Albums", "Home")" class="flex items-center gap-3 px-4 py-3 hover:bg-white/5 rounded-lg transition @(ViewContext.RouteData.Values["Action"]?.ToString() == "Albums" ? "active-link" : "")">
+                <span class="material-symbols-outlined">album</span> Альбомы
+            </a>
+            <a href="@Url.Action("Artists", "Home")" class="flex items-center gap-3 px-4 py-3 hover:bg-white/5 rounded-lg transition @(ViewContext.RouteData.Values["Action"]?.ToString() == "Artists" ? "active-link" : "")">
+                <span class="material-symbols-outlined">person</span> Исполнители
+            </a>
+        </div>
+
+        <div class="px-2 mt-auto pt-4 border-t border-white/5">
+            <a href="@Url.Action("Premium", "Home")" class="flex items-center gap-3 px-4 py-3 hover:bg-white/5 rounded-lg transition @(ViewContext.RouteData.Values["Action"]?.ToString() == "Premium" ? "active-link" : "")">
+                <span class="material-symbols-outlined text-amber-400">workspace_premium</span> Premium
+            </a>
+        </div>
+    </nav>
+
+    <div class="flex-1 flex flex-col relative overflow-hidden">
+        <header class="h-16 border-b border-white/5 flex items-center justify-between px-8 bg-[#101419]/80 backdrop-blur-md z-40">
+            <div class="relative w-96 z-50">
+                <div class="relative flex items-center">
+                    <span class="material-symbols-outlined absolute left-4 text-gray-400 select-none pointer-events-none">search</span>
+                    <input type="text" id="globalSearchInput" autocomplete="off" placeholder="Поиск треков, артистов..." class="w-full bg-[#022E5B]/30 border-none text-white placeholder-gray-500 rounded-full pl-11 pr-10 py-2 text-sm outline-none focus:ring-2 focus:ring-[#499BED] transition-all duration-300">
+                    <button type="button" id="clearSearchBtn" class="hidden absolute right-4 text-gray-400 hover:text-white transition">
+                        <span class="material-symbols-outlined text-lg">close</span>
+                    </button>
+                </div>
+
+                <div id="searchDropdown" class="hidden absolute left-0 right-0 mt-3 bg-[#101419]/95 backdrop-blur-xl border border-white/5 rounded-[24px] shadow-2xl overflow-hidden transition-all duration-200">
+                    <div class="p-2 max-h-[450px] overflow-y-auto custom-scrollbar">
+                        <div id="searchTracksSection" class="mb-3 hidden">
+                            <div class="text-[11px] font-bold text-gray-500 uppercase tracking-wider px-3 py-2">Треки</div>
+                            <div id="tracksContainer" class="space-y-0.5"></div>
+                        </div>
+
+                        <div id="searchArtistsSection" class="hidden">
+                            <div class="text-[11px] font-bold text-gray-500 uppercase tracking-wider px-3 py-2">Исполнители</div>
+                            <div id="artistsContainer" class="space-y-0.5"></div>
+                        </div>
+
+                        <div id="searchEmptyState" class="hidden text-center py-8 text-sm text-gray-400">
+                            Ничего не найдено
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="flex gap-4 items-center">
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <a href="@Url.Action("Notifications", "Home")" class="text-gray-400 hover:text-white transition relative">
+                        <span class="material-symbols-outlined @(ViewContext.RouteData.Values["Action"]?.ToString() == "Notifications" ? "text-[#499BED]" : "")">notifications</span>
+                        @if (ViewBag.UnreadNotifications != null && ViewBag.UnreadNotifications > 0)
+                        {
+                            <span class="absolute -top-1 -right-1.5 bg-red-500 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow-md animate-pulse">@ViewBag.UnreadNotifications</span>
+                        }
+                    </a>
+                    <a href="@Url.Action("Profile", "Home")" class="flex items-center gap-2 text-gray-400 hover:text-white transition group">
+                        <span class="text-xs font-medium group-hover:text-[#499BED]">Профиль</span>
+                        <span class="material-symbols-outlined @(ViewContext.RouteData.Values["Action"]?.ToString() == "Profile" ? "text-[#499BED]" : "")">account_circle</span>
+                    </a>
+                    <form asp-controller="Account" asp-action="LogoutAllDevices" method="post" data-turbo="false" class="inline flex items-center m-0 p-0">
+                        <button type="submit" class="text-gray-500 hover:text-red-400 transition flex items-center focus:outline-none bg-transparent border-none cursor-pointer p-0" title="Выйти со всех устройств">
+                            <span class="material-symbols-outlined">devices_off</span>
+                        </button>
+                    </form>
+                    <form asp-controller="Account" asp-action="Logout" method="post" data-turbo="false" class="inline flex items-center m-0 p-0">
+                        <button type="submit" class="text-gray-500 hover:text-red-500 transition flex items-center focus:outline-none bg-transparent border-none cursor-pointer p-0" title="Выйти">
+                            <span class="material-symbols-outlined">logout</span>
+                        </button>
+                    </form>
+                }
+                else
+                {
+                    <div class="flex items-center gap-4">
+                        <a asp-controller="Account" asp-action="Login" class="text-sm font-semibold text-gray-400 hover:text-white transition">Войти</a>
+                        <a asp-controller="Account" asp-action="Register" class="bg-[#499BED] text-white px-5 py-2 rounded-full text-sm font-bold hover:bg-[#3d85cc] transition shadow-lg">Создать профиль</a>
+                    </div>
+                }
+            </div>
+        </header>
+
+        <main class="flex-1 overflow-y-auto p-8 pb-32">
+            @RenderBody()
+        </main>
+
+        <footer id="player-container" data-is-premium="@(isPremium ? "true" : "false")" data-turbo-permanent style="display: none;" class="fixed bottom-0 left-0 md:left-[240px] right-0 h-24 bg-[#022E5B]/95 backdrop-blur-xl border-t border-white/10 px-8 flex items-center justify-between z-50">
+            <div class="flex items-center gap-4 w-1/4">
+                <img id="player-cover" src="/images/default-cover.png" class="w-14 h-14 rounded-lg shadow-lg object-cover" />
+                <div class="overflow-hidden">
+                    <h4 id="player-title" class="text-white font-bold truncate">Выберите трек</h4>
+                    <p id="player-artist" class="text-gray-400 text-xs truncate">Артист</p>
+                </div>
+            </div>
+            <div class="flex flex-col items-center flex-1 max-w-md">
+                <div class="flex items-center gap-6 mb-2">
+                    <button id="shuffle-btn" class="text-gray-400 hover:text-white transition"><span class="material-symbols-outlined">shuffle</span></button>
+                    <button id="prev-btn" class="text-white hover:scale-110 transition"><span class="material-symbols-outlined">skip_previous</span></button>
+                    <button id="play-btn" class="w-12 h-12 bg-white text-black rounded-full flex items-center justify-center hover:scale-105 transition shadow-lg"><span class="material-symbols-outlined" id="play-icon">play_arrow</span></button>
+                    <button id="next-btn" class="text-white hover:scale-110 transition"><span class="material-symbols-outlined">skip_next</span></button>
+                    <button id="repeat-btn" class="text-gray-400 hover:text-white transition"><span class="material-symbols-outlined">repeat</span></button>
+                </div>
+                <div class="w-full flex items-center gap-3">
+                    <span id="current-time" class="text-[10px] text-gray-400 min-w-[30px]">0:00</span>
+                    <input id="progress-bar" type="range" class="flex-1 h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-[#499BED]" value="0" step="0.1" />
+                    <span id="duration-time" class="text-[10px] text-gray-400 min-w-[30px]">0:00</span>
+                </div>
+            </div>
+            <div class="hidden lg:flex items-center justify-end gap-4 w-1/4">
+                @if (isPremium)
+                {
+                    <button id="download-btn-player" class="text-gray-400 hover:text-[#499BED] transition flex items-center" title="Скачать трек"><span class="material-symbols-outlined">download</span></button>
+                    <div class="flex items-center gap-0.5 bg-gradient-to-r from-amber-500 to-yellow-400 text-black text-[9px] font-black px-1.5 py-0.5 rounded shadow ml-2">HQ</div>
+                }
+                <span class="material-symbols-outlined text-gray-400 ml-4">volume_up</span>
+                <input id="volume-slider" type="range" class="w-24 h-1 accent-[#499BED] cursor-pointer" value="100" />
+            </div>
+            <audio id="main-audio"></audio>
+        </footer>
+    </div>
+
+    <div id="pageLoader" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#101419]/80 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="relative w-16 h-16 mb-4">
+            <div class="absolute inset-0 rounded-full border-t-2 border-transparent border-t-[#499BED] animate-spin"></div>
+            <div class="absolute inset-2 rounded-full border-r-2 border-transparent border-r-blue-400 animate-[spin_1.5s_linear_infinite_reverse]"></div>
+            <div class="absolute inset-4 rounded-full border-b-2 border-transparent border-b-blue-300 animate-spin"></div>
+        </div>
+        <p class="text-[#499BED] text-sm font-medium tracking-widest uppercase animate-pulse">Загрузка...</p>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script>
+        (function () {
+        if (window.loaderEventsAttached) return;
+        window.loaderEventsAttached = true;
+
+        const loader = document.getElementById('pageLoader');
+        function showLoader() { if (loader) { loader.classList.remove('opacity-0', 'pointer-events-none'); loader.classList.add('opacity-100', 'pointer-events-auto'); } }
+        function hideLoader() { if (loader) { loader.classList.remove('opacity-100', 'pointer-events-auto'); loader.classList.add('opacity-0', 'pointer-events-none'); } }
+
+        document.addEventListener("turbo:before-visit", showLoader);
+        document.addEventListener("turbo:load", hideLoader);
+
+        document.addEventListener("submit", function (e) {
+        if (e.target && e.target.tagName === 'FORM') {
+        if (!e.defaultPrevented && e.target.checkValidity()) {
+        showLoader();
+        }
+        }
+        });
+
+        window.addEventListener('pageshow', function (e) { if (e.persisted) hideLoader(); });
+        })();
+
+        if (!window.audioPlayerInstance) {
+        window.audioPlayerInstance = document.getElementById('main-audio') || new Audio();
+        window.playerEventsAttached = false;
+        }
+
+        if (window.isShuffle === undefined) window.isShuffle = false;
+        if (window.isRepeat === undefined) window.isRepeat = false;
+        if (window.playlist === undefined) window.playlist = [];
+        if (window.currentIndex === undefined) window.currentIndex = -1;
+
+        window.playTrackFromElement = function (element) {
+        const audioUrl = element.getAttribute('data-audio');
+        const title = element.getAttribute('data-title');
+        const artist = element.getAttribute('data-artist');
+        const cover = element.getAttribute('data-cover');
+
+        if (!audioUrl) return;
+
+        const playerContainer = document.getElementById('player-container');
+        if (playerContainer && playerContainer.style.display === 'none') {
+        playerContainer.style.display = 'flex';
+        }
+
+        window.updatePlaylist();
+
+        if (window.audioPlayerInstance.src !== window.location.origin + audioUrl && !window.audioPlayerInstance.src.endsWith(audioUrl)) {
+        window.audioPlayerInstance.src = audioUrl;
+        }
+
+        if (window.audioPlayerInstance.paused) {
+        window.audioPlayerInstance.play()
+        .then(() => { window.updateGlobalPlayerUI(title, artist, cover, true); })
+        .catch(error => console.error(error));
+        } else {
+        window.audioPlayerInstance.pause();
+        window.updateGlobalPlayerUI(title, artist, cover, false);
+        }
+        window.currentIndex = window.playlist.findIndex(t => t.url === audioUrl);
+        };
+
+        window.updateGlobalPlayerUI = function (title, artist, cover, isPlaying) {
+        const playerTitle = document.getElementById('player-title');
+        const playerArtist = document.getElementById('player-artist');
+        const playerCover = document.getElementById('player-cover');
+        const playIconEl = document.getElementById('play-icon');
+        const playButton = document.querySelector('.global-play-btn');
+
+        if (playerTitle) playerTitle.textContent = title;
+        if (playerArtist) playerArtist.textContent = artist;
+        if (playerCover) playerCover.src = cover || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400';
+
+        if (playButton) playButton.textContent = isPlaying ? 'pause_circle' : 'play_circle';
+        if (playIconEl) playIconEl.textContent = isPlaying ? 'pause' : 'play_arrow';
+        };
+
+        window.formatTime = function (seconds) {
+        const min = Math.floor(seconds / 60);
+        const sec = Math.floor(seconds % 60);
+        return `${min}:${sec < 10 ? '0' : ''}${sec}`;
+        };
+
+        window.updatePlaylist = function () {
+        const trackElements = document.querySelectorAll('[data-audio]');
+        if (trackElements.length > 0) {
+        window.playlist = Array.from(trackElements).map(el => ({
+        url: el.getAttribute('data-audio'),
+        title: el.getAttribute('data-title'),
+        artist: el.getAttribute('data-artist'),
+        cover: el.getAttribute('data-cover')
+        }));
+        }
+        };
+
+        window.playTrack = function (url, title, artist, cover) {
+        const audio = window.audioPlayerInstance;
+        if (!audio) return;
+
+        const playerContainer = document.getElementById('player-container');
+        if (playerContainer && playerContainer.style.display === 'none') {
+        playerContainer.style.display = 'flex';
+        }
+
+        window.updatePlaylist();
+
+        const cleanUrl = url.startsWith('/') ? url : '/' + url;
+        const currentSrc = audio.src.replace(window.location.origin, '');
+
+        if (currentSrc === cleanUrl && !audio.paused) {
+        window.togglePlay();
+        return;
+        }
+
+        if (currentSrc !== cleanUrl) {
+        audio.src = cleanUrl;
+        }
+
+        audio.play().catch(e => console.error(e));
+        window.updateGlobalPlayerUI(title, artist, cover, true);
+        window.currentIndex = window.playlist.findIndex(t => t.url === url);
+        };
+
+        window.togglePlay = function () {
+        const audio = window.audioPlayerInstance;
+        if (audio.src) {
+        if (audio.paused) {
+        audio.play().catch(e => console.error(e));
+        window.updatePlayIconStatus(true);
+        } else {
+        audio.pause();
+        window.updatePlayIconStatus(false);
+        }
+        }
+        };
+
+        window.updatePlayIconStatus = function (isPlaying) {
+        const playIconEl = document.getElementById('play-icon');
+        const playButton = document.querySelector('.global-play-btn');
+        if (playIconEl) playIconEl.innerText = isPlaying ? 'pause' : 'play_arrow';
+        if (playButton) playButton.textContent = isPlaying ? 'pause_circle' : 'play_circle';
+        };
+
+        window.changeTrack = function (direction) {
+        window.updatePlaylist();
+        if (window.playlist.length === 0) return;
+
+        const playerContainerElement = document.getElementById('player-container');
+        const isPremium = playerContainerElement ? playerContainerElement.getAttribute('data-is-premium') === 'true' : false;
+
+        if (window.isShuffle && isPremium) {
+        window.currentIndex = Math.floor(Math.random() * window.playlist.length);
+        } else {
+        window.currentIndex = (window.currentIndex !== undefined ? window.currentIndex : -1) + direction;
+        if (window.currentIndex >= window.playlist.length) window.currentIndex = 0;
+        if (window.currentIndex < 0) window.playlist.length - 1;
+        }
+
+        const track = window.playlist[window.currentIndex];
+        if (track) {
+        window.playTrack(track.url, track.title, track.artist, track.cover);
+        }
+        };
+
+        window.toggleLike = function (trackId, button) {
+        const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+        fetch('/Home/ToggleLike?id=' + trackId, {
+        method: 'POST',
+        headers: { 'RequestVerificationToken': token }
+        })
+        .then(r => r.json())
+        .then(data => {
+        if (data.success) {
+        const icon = button.querySelector('.material-symbols-outlined');
+        if (icon) {
+        icon.classList.toggle('text-red-500', data.isLiked);
+        icon.classList.toggle('fill-1', data.isLiked);
+        icon.classList.toggle('text-gray-400', !data.isLiked);
+        }
+        }
+        })
+        .catch(error => console.error(error));
+        };
+
+        function setupPlayerControls() {
+        const audio = window.audioPlayerInstance;
+        const playBtn = document.getElementById('play-btn');
+        const progressBar = document.getElementById('progress-bar');
+        const volumeSlider = document.getElementById('volume-slider');
+        const shuffleBtn = document.getElementById('shuffle-btn');
+        const repeatBtn = document.getElementById('repeat-btn');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const downloadBtnPlayer = document.getElementById('download-btn-player');
+
+        const playerContainerElement = document.getElementById('player-container');
+        const isPremium = playerContainerElement ? playerContainerElement.getAttribute('data-is-premium') === 'true' : false;
+
+        if (!window.playerEventsAttached && audio) {
+        audio.addEventListener('timeupdate', () => {
+        if (audio.duration) {
+        const progress = (audio.currentTime / audio.duration) * 100;
+        const pBar = document.getElementById('progress-bar');
+        const cTimeEl = document.getElementById('current-time');
+        if (pBar) pBar.value = progress;
+        if (cTimeEl) cTimeEl.innerText = window.formatTime(audio.currentTime);
+        }
+        });
+
+        audio.addEventListener('loadedmetadata', () => {
+        const dTimeEl = document.getElementById('duration-time');
+        if (dTimeEl) dTimeEl.innerText = window.formatTime(audio.duration);
+        });
+
+        audio.addEventListener('ended', () => {
+        if (window.isRepeat && isPremium) {
+        audio.play();
+        } else {
+        window.changeTrack(1);
+        }
+        });
+
+        window.playerEventsAttached = true;
+        }
+
+        if (progressBar) {
+        progressBar.oninput = () => {
+        if (audio.duration) {
+        audio.currentTime = (progressBar.value * audio.duration) / 100;
+        }
+        };
+        }
+
+        if (volumeSlider) {
+        volumeSlider.oninput = () => {
+        audio.volume = volumeSlider.value / 100;
+        };
+        }
+
+        if (playBtn) playBtn.onclick = window.togglePlay;
+        if (nextBtn) nextBtn.onclick = () => window.changeTrack(1);
+        if (prevBtn) prevBtn.onclick = () => window.changeTrack(-1);
+
+        function showPremiumModal() {
+        alert('Эта функция доступна только для подписчиков Beatly Premium.');
+        }
+
+        if (shuffleBtn) {
+        shuffleBtn.onclick = () => {
+        if (!isPremium) {
+        showPremiumModal();
+        return;
+        }
+        window.isShuffle = !window.isShuffle;
+        shuffleBtn.classList.toggle('text-[#499BED]', window.isShuffle);
+        shuffleBtn.classList.toggle('text-gray-400', !window.isShuffle);
+        };
+        shuffleBtn.classList.toggle('text-[#499BED]', window.isShuffle);
+        shuffleBtn.classList.toggle('text-gray-400', !window.isShuffle);
+        }
+
+        if (repeatBtn) {
+        repeatBtn.onclick = () => {
+        if (!isPremium) {
+        showPremiumModal();
+        return;
+        }
+        window.isRepeat = !window.isRepeat;
+        audio.loop = window.isRepeat;
+        repeatBtn.classList.toggle('text-[#499BED]', window.isRepeat);
+        repeatBtn.classList.toggle('text-gray-400', !window.isRepeat);
+        };
+        repeatBtn.classList.toggle('text-[#499BED]', window.isRepeat);
+        repeatBtn.classList.toggle('text-gray-400', !window.isRepeat);
+        }
+
+        if (downloadBtnPlayer) {
+        downloadBtnPlayer.onclick = () => {
+        if (!isPremium) {
+        showPremiumModal();
+        return;
+        }
+        if (audio && audio.src) {
+        const trackTitle = document.getElementById('player-title')?.innerText || 'Track';
+        const trackArtist = document.getElementById('player-artist')?.innerText || 'Artist';
+
+        fetch(audio.src)
+        .then(response => response.blob())
+        .then(blob => {
+        const blobUrl = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = `${trackArtist} - ${trackTitle}`;
+        link.click();
+        });
+        }
+        };
+        }
+        }
+
+        document.addEventListener('turbo:load', setupPlayerControls);
+    </script>
+
+    <script>
+        document.addEventListener('turbo:load', () => {
+        const searchInput = document.getElementById('globalSearchInput');
+        const searchDropdown = document.getElementById('searchDropdown');
+        const clearBtn = document.getElementById('clearSearchBtn');
+
+        const tracksSection = document.getElementById('searchTracksSection');
+        const tracksContainer = document.getElementById('tracksContainer');
+        const artistsSection = document.getElementById('searchArtistsSection');
+        const artistsContainer = document.getElementById('artistsContainer');
+        const emptyState = document.getElementById('searchEmptyState');
+
+        let debounceTimeout;
+
+        if (!searchInput) return;
+
+        searchInput.addEventListener('input', () => {
+        const query = searchInput.value.trim();
+
+        if (query.length > 0) {
+        clearBtn.classList.remove('hidden');
+        } else {
+        clearBtn.classList.add('hidden');
+        hideDropdown();
+        return;
+        }
+
+        clearTimeout(debounceTimeout);
+        debounceTimeout = setTimeout(() => {
+        fetchSuggestions(query);
+        }, 300);
+        });
+
+        clearBtn.addEventListener('click', () => {
+        searchInput.value = '';
+        clearBtn.classList.add('hidden');
+        hideDropdown();
+        searchInput.focus();
+        });
+
+        document.addEventListener('click', (e) => {
+        if (!searchInput.contains(e.target) && !searchDropdown.contains(e.target)) {
+        hideDropdown();
+        }
+        });
+
+        searchInput.addEventListener('focus', () => {
+        if (searchInput.value.trim().length > 0) {
+        searchDropdown.classList.remove('hidden');
+        }
+        });
+
+        function hideDropdown() {
+        if (searchDropdown) searchDropdown.classList.add('hidden');
+        }
+
+        function fetchSuggestions(query) {
+        fetch(`/api/searchapi/suggest?query=${encodeURIComponent(query)}`)
+        .then(res => {
+        if (!res.ok) throw new Error();
+        return res.json();
+        })
+        .then(data => {
+        renderSuggestions(data);
+        })
+        .catch(() => {
+        hideDropdown();
+        });
+        }
+
+        function renderSuggestions(data) {
+        tracksContainer.innerHTML = '';
+        artistsContainer.innerHTML = '';
+
+        const hasTracks = data.tracks && data.tracks.length > 0;
+        const hasArtists = data.artists && data.artists.length > 0;
+
+        if (!hasTracks && !hasArtists) {
+        tracksSection.classList.add('hidden');
+        artistsSection.classList.add('hidden');
+        emptyState.classList.remove('hidden');
+        searchDropdown.classList.remove('hidden');
+        return;
+        }
+
+        emptyState.classList.add('hidden');
+
+        if (hasTracks) {
+        data.tracks.forEach(track => {
+        const trackRow = document.createElement('div');
+        trackRow.className = "flex items-center gap-3 p-2 hover:bg-white/5 rounded-xl cursor-pointer transition group";
+        trackRow.onclick = () => {
+        if (typeof window.playTrack === 'function') {
+        window.playTrack(track.url || `/audio/${track.id}.mp3`, track.title, track.artist, track.coverPath);
+        } else {
+        location.href = `/Tracks/Details/${track.id}`;
+        }
+        };
+        trackRow.innerHTML = `
+        <div class="w-10 h-10 rounded-lg overflow-hidden bg-gray-800 flex-shrink-0 relative">
+        <img src="${track.coverPath || '/images/default-cover.png'}" class="w-full h-full object-cover">
+        <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+        <span class="material-symbols-outlined text-white text-xl">play_arrow</span>
+        </div>
+        </div>
+        <div class="flex-1 min-w-0">
+        <div class="text-sm font-semibold text-white truncate">${track.title}</div>
+        <div class="text-xs text-gray-400 truncate mt-0.5">${track.artist}</div>
+        </div>
+        `;
+        tracksContainer.appendChild(trackRow);
+        });
+        tracksSection.classList.remove('hidden');
+        } else {
+        tracksSection.classList.add('hidden');
+        }
+
+        if (hasArtists) {
+        data.artists.forEach(artist => {
+        const artistRow = document.createElement('div');
+        artistRow.className = "flex items-center gap-3 p-2.5 hover:bg-white/5 rounded-xl cursor-pointer transition text-sm font-medium text-gray-200 hover:text-white";
+        artistRow.onclick = () => {
+        location.href = `/Home/Search?query=${encodeURIComponent(artist)}`;
+        };
+        artistRow.innerHTML = `
+        <span class="material-symbols-outlined text-gray-400 text-lg">music_note</span>
+        <span class="truncate">${artist}</span>
+        `;
+        artistsContainer.appendChild(artistRow);
+        });
+        artistsSection.classList.remove('hidden');
+        } else {
+        artistsSection.classList.add('hidden');
+        }
+
+        searchDropdown.classList.remove('hidden');
+        }
+        });
+    </script>
+</body>
+</html>

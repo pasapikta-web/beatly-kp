@@ -1,0 +1,44 @@
+﻿@model IEnumerable<IGrouping<string?, Beatly.Models.Track>>
+
+@{
+    ViewData["Title"] = "Альбомы";
+}
+
+<div class="mb-8">
+    <h1 class="text-4xl font-black text-white">Альбомы</h1>
+</div>
+
+@if (Model != null && Model.Any())
+{
+    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
+        @foreach (var album in Model)
+        {
+            var firstTrackWithCover = album.FirstOrDefault(t => !string.IsNullOrEmpty(t.CoverUrl) && !t.CoverUrl.Contains("default"));
+            var coverUrl = "https://placehold.co/200x200?text=No+Cover";
+
+            if (firstTrackWithCover != null)
+            {
+                var origCover = firstTrackWithCover.CoverUrl.Replace("wwwroot/", "").Replace("wwwroot\\", "").Replace("\\", "/");
+                if (!origCover.StartsWith("/"))
+                {
+                    origCover = "/" + origCover;
+                }
+                coverUrl = origCover;
+            }
+
+            <a asp-controller="Home" asp-action="AlbumDetails" asp-route-name="@album.Key" class="bg-[#1a1f26] p-4 rounded-3xl border border-white/5 hover:bg-white/10 transition group cursor-pointer block">
+                <div class="aspect-square bg-[#262c34] rounded-2xl flex items-center justify-center mb-4 overflow-hidden relative">
+                    <img src="@coverUrl"
+                         class="w-full h-full object-cover"
+                         onerror="this.onerror=null; this.src='https://placehold.co/200x200?text=No+Cover';" />
+
+                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                        <span class="material-symbols-outlined text-white text-4xl drop-shadow-lg">play_circle</span>
+                    </div>
+                </div>
+                <h3 class="text-white font-bold truncate text-base mb-1">@(string.IsNullOrEmpty(album.Key) ? "Без альбома" : album.Key)</h3>
+                <p class="text-gray-500 text-sm">@album.Count() треков</p>
+            </a>
+        }
+    </div>
+}

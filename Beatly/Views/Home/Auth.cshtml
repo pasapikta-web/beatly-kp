@@ -1,0 +1,43 @@
+﻿@{
+    Layout = null; 
+}
+<!DOCTYPE html>
+<html class="dark">
+<head>
+    <meta charset="utf-8" />
+    <title>Вход - Beatly</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        body {
+            background-color: #101419;
+            font-family: 'Be Vietnam Pro', sans-serif;
+        }</style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-6">
+    <div class="w-full max-w-[400px] bg-[#1c2025] p-10 rounded-[40px] shadow-2xl border border-white/5 text-center">
+        <div class="flex justify-center mb-8">
+            <div class="w-16 h-16 rounded-3xl bg-[#499BED] flex items-center justify-center rotate-12">
+                <span class="material-symbols-outlined text-4xl text-white">headphones</span>
+            </div>
+        </div>
+        <h1 class="text-3xl font-black text-white mb-2">Beatly</h1>
+        <p class="text-gray-400 text-sm mb-8">Музыка, которая всегда с вами</p>
+
+        <form class="space-y-4">
+            <input type="email" placeholder="Электронная почта" class="w-full bg-[#022E5B]/20 border-white/10 rounded-2xl py-4 px-6 text-white focus:ring-2 focus:ring-[#499BED] outline-none" />
+            <input type="password" placeholder="Пароль" class="w-full bg-[#022E5B]/20 border-white/10 rounded-2xl py-4 px-6 text-white focus:ring-2 focus:ring-[#499BED] outline-none" />
+
+            <button type="submit" class="w-full bg-[#499BED] text-white py-4 rounded-2xl font-black shadow-lg shadow-[#499BED]/20 hover:bg-[#357abd] transition">
+                ВОЙТИ
+            </button>
+        </form>
+
+        <div class="mt-8 flex flex-col gap-4">
+            <a href="#" class="text-xs text-gray-500 hover:text-white transition">Забыли пароль?</a>
+            <div class="h-px bg-white/5 w-full"></div>
+            <p class="text-xs text-gray-500">Нет аккаунта? <a href="#" class="text-[#499BED] font-bold hover:underline">Зарегистрироваться</a></p>
+        </div>
+    </div>
+</body>
+</html>

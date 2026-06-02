@@ -1,0 +1,338 @@
+﻿@model Beatly.Models.ProfileViewModel
+
+@if (Model == null)
+{
+    <h2>Пользователь не найден. Пожалуйста, авторизуйтесь.</h2>
+}
+else
+{
+    <main id="mainContainer" class="flex-1 p-10 overflow-y-auto bg-[#0a0f14] text-white font-['Inter']">
+        <section class="max-w-7xl mx-auto">
+
+            <div class="bg-[#12181f] border border-white/5 rounded-[32px] p-8 mb-8 relative overflow-hidden transition-colors duration-300">
+                <div class="absolute top-0 right-0 w-64 h-64 bg-[#0071e3]/10 blur-[100px] -mr-32 -mt-32"></div>
+
+                <form asp-action="UpdateProfile" method="post" enctype="multipart/form-data" class="relative z-10">
+                    <div class="flex flex-col md:flex-row items-center justify-between gap-8">
+                        <div class="flex items-center gap-8">
+                            <div class="relative group">
+                                <div class="w-32 h-32 rounded-full bg-gradient-to-tr from-[#0071e3] to-cyan-400 p-1 shadow-2xl">
+                                    <img id="profilePreview" src="@Model.ProfilePicturePath" class="w-full h-full rounded-full object-cover border-4 border-[#12181f]">
+                                </div>
+                                <label for="profilePicture" class="absolute bottom-1 right-1 w-8 h-8 bg-[#1a222c] border border-white/10 rounded-full flex items-center justify-center cursor-pointer hover:bg-[#0071e3] transition shadow-lg">
+                                    <span class="material-symbols-outlined text-[18px] text-white">edit</span>
+                                </label>
+                                <input type="file" id="profilePicture" name="profilePicture" class="hidden" accept="image/*" onchange="previewImage(this)">
+                            </div>
+
+                            <div id="viewMode">
+                                <h2 class="text-4xl font-bold tracking-tight mb-1">@Model.FullName</h2>
+                                <p class="text-gray-400 text-base mb-4">@Model.Email</p>
+
+                                @if (Model.IsPremium)
+                                {
+                                    <div class="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-full w-fit">
+                                        <span class="material-symbols-outlined text-[16px] text-[#0071e3]">workspace_premium</span>
+                                        <span class="text-xs font-bold text-gray-300 uppercase tracking-wider">Premium Listener</span>
+                                    </div>
+                                }
+                            </div>
+
+                            <div id="editMode" class="hidden space-y-4">
+                                <input type="text" name="fullName" value="@Model.FullName" placeholder="Имя Фамилия" class="block w-64 bg-[#1a222c] border border-white/10 rounded-xl px-4 py-2.5 text-lg font-bold focus:ring-2 focus:ring-[#0071e3] outline-none transition text-white">
+                                <input type="email" name="email" value="@Model.Email" placeholder="Email" class="block w-64 bg-[#1a222c] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-gray-300 focus:ring-2 focus:ring-[#0071e3] outline-none transition">
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-4">
+                            <button type="button" id="editBtn" onclick="toggleEdit()" class="px-8 py-3 bg-[#0071e3] hover:bg-[#005bbd] rounded-full text-sm font-bold transition shadow-lg shadow-[#0071e3]/20 text-white">Изменить профиль</button>
+                            <div id="saveActions" class="hidden flex gap-3">
+                                <button type="submit" class="px-8 py-3 bg-green-600 hover:bg-green-700 rounded-full text-sm font-bold transition shadow-lg shadow-green-600/20 text-white">Сохранить</button>
+                                <button type="button" onclick="toggleEdit()" class="px-8 py-3 bg-white/5 hover:bg-white/10 rounded-full text-sm font-bold transition text-white">Отмена</button>
+                            </div>
+                            <button type="button" onclick="shareProfile()" class="px-8 py-3 bg-transparent hover:bg-white/5 border border-white/20 rounded-full text-sm font-bold transition text-white">Поделиться</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+                <div class="bg-[#12181f] border border-white/5 rounded-[28px] p-8 transition-colors duration-300">
+                    <h3 class="flex items-center gap-3 text-base font-bold text-gray-200 mb-8">
+                        <span class="material-symbols-outlined text-gray-400">person</span> Аккаунт
+                    </h3>
+                    <div class="space-y-6">
+                        <div>
+                            <div class="flex justify-between items-center group cursor-pointer" onclick="document.getElementById('passSection').classList.toggle('hidden')">
+                                <div>
+                                    <div class="text-[15px] font-semibold text-gray-200 group-hover:text-[#0071e3] transition">Изменить пароль</div>
+                                    <div class="text-xs text-gray-500 mt-1">Обновите данные безопасности</div>
+                                </div>
+                                <span class="material-symbols-outlined text-gray-500 group-hover:translate-x-1 transition">chevron_right</span>
+                            </div>
+                            <div id="passSection" class="hidden bg-[#1a222c] p-5 rounded-[16px] flex flex-col gap-3 mt-4 transition-colors duration-300">
+                                <input type="password" id="oldPass" placeholder="Текущий пароль" class="bg-[#12181f] border border-white/10 text-white rounded-xl px-4 py-2.5 outline-none focus:border-[#0071e3]">
+                                <input type="password" id="newPass" placeholder="Новый пароль" class="bg-[#12181f] border border-white/10 text-white rounded-xl px-4 py-2.5 outline-none focus:border-[#0071e3]">
+                                <button onclick="changePassword()" class="bg-[#0071e3] hover:bg-[#005bbd] text-white font-bold py-2.5 rounded-xl transition mt-2">Подтвердить</button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between items-center group cursor-pointer" onclick="document.getElementById('devicesSection').classList.toggle('hidden')">
+                                <div>
+                                    <div class="text-[15px] font-semibold text-gray-200 group-hover:text-[#0071e3] transition">Подключенные устройства</div>
+                                    <div class="text-xs text-gray-500 mt-1">Управление активными сессиями</div>
+                                </div>
+                                <span class="material-symbols-outlined text-gray-500 group-hover:translate-x-1 transition">chevron_right</span>
+                            </div>
+                            <div id="devicesSection" class="hidden flex flex-col gap-3 mt-4">
+                                @foreach (var device in Model.Devices)
+                                {
+                                    <div class="bg-[#1a222c] p-4 rounded-[16px] flex justify-between items-center transition-colors duration-300">
+                                        <div>
+                                            <div class="text-[14px] text-gray-200 font-bold">@device.Name</div>
+                                            <div class="text-xs text-gray-500 mt-1">@device.Location • @device.LastActive</div>
+                                        </div>
+                                        @if (device.IsCurrent)
+                                        {
+                                            <span class="text-xs text-[#0071e3] font-bold bg-[#0071e3]/10 px-3 py-1 rounded-full">Текущее</span>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <form asp-controller="Account" asp-action="LogoutAllDevices" method="post" data-turbo="false" class="m-0 p-0 mt-6">
+                            <button type="submit" class="text-red-500 hover:text-red-400 font-medium transition-colors flex items-center gap-2 text-sm focus:outline-none bg-transparent border-none p-0 cursor-pointer">
+                                <span class="material-symbols-outlined text-lg select-none">logout</span>
+                                Выйти со всех устройств
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="bg-[#12181f] border border-white/5 rounded-[28px] p-8 transition-colors duration-300">
+                    <h3 class="flex items-center gap-3 text-base font-bold text-gray-200 mb-8">
+                        <span class="material-symbols-outlined text-gray-400">tune</span> Настройки воспроизведения
+                    </h3>
+                    <div class="space-y-7">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <div class="text-[15px] font-semibold text-gray-200">Качество стриминга</div>
+                                <div class="text-xs text-gray-500 mt-1">Влияет на потребление трафика</div>
+                            </div>
+                            <select id="qualitySelect" onchange="updateProfileSettings()" class="bg-[#1a222c] border border-white/10 text-gray-300 text-xs rounded-xl py-2.5 px-4 outline-none cursor-pointer focus:border-[#0071e3] transition appearance-none">
+                                @if (Model.StreamingQuality == "Lossless (Hi-Fi)")
+                                {
+                                    <option value="High">Высокое</option>
+                                    <option value="Lossless (Hi-Fi)" selected>Lossless (Hi-Fi)</option>
+                                }
+                                else
+                                {
+                                    <option value="High" selected>Высокое</option>
+                                    <option value="Lossless (Hi-Fi)">Lossless (Hi-Fi)</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="flex justify-between items-center">
+                            <span class="text-[15px] font-semibold text-gray-200">Включить эквалайзер</span>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="eqToggle" onchange="toggleEq()" class="sr-only peer" @(Model.IsEqualizerEnabled ? "checked" : "")>
+                                <div class="w-11 h-6 bg-gray-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-[#0071e3] after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+                            </label>
+                        </div>
+
+                        <div id="eqPanel" class="@(Model.IsEqualizerEnabled ? "flex" : "hidden") gap-8 mt-4 justify-center bg-[#1a222c] p-6 rounded-[16px] border border-white/5 transition-colors duration-300">
+                            <div class="flex flex-col items-center gap-3">
+                                <input type="range" id="eqLow" min="-15" max="15" value="0" oninput="updateEqValues()" class="w-2 h-24 bg-gray-700 rounded-lg appearance-none cursor-pointer" style="-webkit-appearance: slider-vertical;">
+                                <span class="text-xs text-gray-400 font-bold">Low</span>
+                            </div>
+                            <div class="flex flex-col items-center gap-3">
+                                <input type="range" id="eqMid" min="-15" max="15" value="0" oninput="updateEqValues()" class="w-2 h-24 bg-gray-700 rounded-lg appearance-none cursor-pointer" style="-webkit-appearance: slider-vertical;">
+                                <span class="text-xs text-gray-400 font-bold">Mid</span>
+                            </div>
+                            <div class="flex flex-col items-center gap-3">
+                                <input type="range" id="eqHigh" min="-15" max="15" value="0" oninput="updateEqValues()" class="w-2 h-24 bg-gray-700 rounded-lg appearance-none cursor-pointer" style="-webkit-appearance: slider-vertical;">
+                                <span class="text-xs text-gray-400 font-bold">High</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-[#12181f] border border-white/5 rounded-[28px] p-8 transition-colors duration-300">
+                    <h3 class="flex items-center gap-3 text-base font-bold text-gray-200 mb-8">
+                        <span class="material-symbols-outlined text-gray-400">link</span> Социальные сети
+                    </h3>
+                    <form asp-action="UpdateSocialLinks" method="post" class="space-y-4">
+                        <div>
+                            <label class="text-xs text-gray-500 font-bold mb-1 block">Instagram</label>
+                            <input type="text" name="instagramUrl" value="@Model.InstagramUrl" placeholder="https://instagram.com/username" class="w-full bg-[#1a222c] border border-white/10 text-white rounded-xl px-4 py-2.5 outline-none focus:border-[#0071e3]" />
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 font-bold mb-1 block">Telegram</label>
+                            <input type="text" name="telegramUrl" value="@Model.TelegramUrl" placeholder="https://t.me/username" class="w-full bg-[#1a222c] border border-white/10 text-white rounded-xl px-4 py-2.5 outline-none focus:border-[#0071e3]" />
+                        </div>
+                        <button type="submit" class="w-full bg-[#0071e3] hover:bg-[#005bbd] text-white font-bold py-3 rounded-xl transition mt-2">
+                            Сохранить ссылки
+                        </button>
+                    </form>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <script>
+        function toggleEdit() {
+            const viewMode = document.getElementById('viewMode');
+            const editMode = document.getElementById('editMode');
+            const editBtn = document.getElementById('editBtn');
+            const saveActions = document.getElementById('saveActions');
+
+            viewMode.classList.toggle('hidden');
+            editMode.classList.toggle('hidden');
+            editBtn.classList.toggle('hidden');
+            saveActions.classList.toggle('hidden');
+        }
+
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    document.getElementById('profilePreview').src = e.target.result;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function shareProfile() {
+            const url = window.location.href;
+            if (navigator.share) {
+                navigator.share({ title: 'Мой профиль в Beatly', url: url }).catch(console.error);
+            } else {
+                navigator.clipboard.writeText(url).then(() => {
+                    alert('Ссылка на профиль скопирована в буфер обмена!');
+                });
+            }
+        }
+
+        function changePassword() {
+            const oldP = document.getElementById('oldPass').value;
+            const newP = document.getElementById('newPass').value;
+
+            fetch('/Profile/ChangePassword', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ OldPassword: oldP, NewPassword: newP })
+            }).then(res => {
+                if (res.ok) {
+                    alert('Пароль успешно изменен');
+                    document.getElementById('passSection').classList.add('hidden');
+                    document.getElementById('oldPass').value = '';
+                    document.getElementById('newPass').value = '';
+                } else {
+                    alert('Ошибка при изменении пароля');
+                }
+            });
+        }
+
+        let audioCtx, source, lowNode, midNode, highNode;
+
+        function initEq() {
+            const audioElements = document.querySelectorAll('audio');
+            if (audioElements.length === 0) return;
+            const audio = audioElements[0];
+
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                source = audioCtx.createMediaElementSource(audio);
+
+                lowNode = audioCtx.createBiquadFilter();
+                midNode = audioCtx.createBiquadFilter();
+                highNode = audioCtx.createBiquadFilter();
+
+                lowNode.type = 'lowshelf'; lowNode.frequency.value = 320;
+                midNode.type = 'peaking'; midNode.frequency.value = 1000; midNode.Q.value = 0.5;
+                highNode.type = 'highshelf'; highNode.frequency.value = 3200;
+
+                source.connect(lowNode);
+                lowNode.connect(midNode);
+                midNode.connect(highNode);
+                highNode.connect(audioCtx.destination);
+            }
+        }
+
+        function toggleEq() {
+            const isChecked = document.getElementById('eqToggle').checked;
+            const panel = document.getElementById('eqPanel');
+
+            if (isChecked) {
+                panel.classList.remove('hidden');
+                panel.classList.add('flex');
+                initEq();
+                if (audioCtx && audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                updateEqValues();
+            } else {
+                panel.classList.add('hidden');
+                panel.classList.remove('flex');
+                if (source && audioCtx) {
+                    source.disconnect();
+                    source.connect(audioCtx.destination);
+                }
+            }
+            updateProfileSettings();
+        }
+
+        function updateEqValues() {
+            if (!lowNode) return;
+            lowNode.gain.value = document.getElementById('eqLow').value;
+            midNode.gain.value = document.getElementById('eqMid').value;
+            highNode.gain.value = document.getElementById('eqHigh').value;
+        }
+
+        function updateProfileSettings() {
+            const quality = document.getElementById('qualitySelect').value;
+            const eqEnabled = document.getElementById('eqToggle').checked;
+
+            fetch('/Profile/SaveSettings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `quality=${quality}&eqEnabled=${eqEnabled}`
+            }).then(() => {
+                applyQuality(quality);
+            });
+        }
+
+        function applyQuality(quality) {
+            const audioElements = document.querySelectorAll('audio');
+            if (audioElements.length === 0) return;
+            const audio = audioElements[0];
+
+            const currentTime = audio.currentTime;
+            const isPlaying = !audio.paused;
+
+            let targetSrc = audio.dataset.highSrc;
+            if (quality === 'Lossless (Hi-Fi)' && audio.dataset.losslessSrc) {
+                targetSrc = audio.dataset.losslessSrc;
+            }
+
+            if (targetSrc && audio.src !== targetSrc && !audio.src.includes(targetSrc)) {
+                audio.src = targetSrc;
+                audio.currentTime = currentTime;
+                if (isPlaying) {
+                    audio.play();
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (document.getElementById('eqToggle').checked) {
+                setTimeout(initEq, 1000);
+            }
+        });
+    </script>
+}

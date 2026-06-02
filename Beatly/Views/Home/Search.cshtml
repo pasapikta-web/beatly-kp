@@ -1,0 +1,120 @@
+﻿@model IEnumerable<Beatly.Models.Track>
+
+@{
+    ViewData["Title"] = "Поиск";
+}
+
+<div class="p-8 text-white min-h-screen">
+
+    <div class="mb-8">
+        <form asp-action="Search" method="get" class="relative max-w-3xl">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            </div>
+            <input type="text" name="query" class="w-full bg-[#1c1c24] text-white rounded-full py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Поиск треков, артистов..." value="@Context.Request.Query["query"]" />
+        </form>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <h2 class="text-2xl font-bold mb-6">Результаты поиска</h2>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+            @foreach (var track in Model)
+            {
+                <div class="bg-[#18181d] rounded-lg p-4 hover:bg-[#28282d] transition group cursor-pointer">
+                    <div class="relative mb-4">
+                        <img src="@track.CoverUrl" alt="@track.Title" class="w-full aspect-square object-cover rounded-md" onerror="this.src='/images/default-cover.jpg'" />
+                        <button class="absolute bottom-2 right-2 bg-blue-500 rounded-full p-3 opacity-0 group-hover:opacity-100 transition transform translate-y-2 group-hover:translate-y-0" onclick="playTrack('@track.AudioUrl', '@track.Title', '@track.Artist', '@track.CoverUrl')">
+                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>
+                        </button>
+                    </div>
+                    <h3 class="font-bold truncate text-sm">@track.Title</h3>
+                    <p class="text-gray-400 text-xs truncate">@track.Artist</p>
+                </div>
+            }
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(Context.Request.Query["query"]))
+    {
+        <div class="text-center text-gray-400 mt-12">
+            <p class="text-xl">По вашему запросу ничего не найдено.</p>
+        </div>
+    }
+    else
+    {
+        <h1 class="text-3xl font-bold mb-6">Жанры</h1>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <a asp-action="Category" asp-route-type="Genre" asp-route-name="Рок" class="relative rounded-xl h-40 overflow-hidden cursor-pointer group block">
+                <img src="https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?auto=format&fit=crop&w=400&q=80" alt="Рок" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent group-hover:from-black/70 transition"></div>
+                <span class="font-bold text-2xl absolute bottom-4 left-4 drop-shadow-md text-white">Рок</span>
+            </a>
+
+            <a asp-action="Category" asp-route-type="Genre" asp-route-name="Поп" class="relative rounded-xl h-40 overflow-hidden cursor-pointer group block">
+                <img src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=400&q=80" alt="Поп" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent group-hover:from-black/70 transition"></div>
+                <span class="font-bold text-2xl absolute bottom-4 left-4 drop-shadow-md text-white">Поп</span>
+            </a>
+
+            <a asp-action="Category" asp-route-type="Genre" asp-route-name="Электроника" class="relative rounded-xl h-40 overflow-hidden cursor-pointer group block">
+                <img src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=400&q=80" alt="Электроника" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent group-hover:from-black/70 transition"></div>
+                <span class="font-bold text-2xl absolute bottom-4 left-4 drop-shadow-md text-white">Электроника</span>
+            </a>
+
+            <a asp-action="Category" asp-route-type="Genre" asp-route-name="Хип-Хоп" class="relative rounded-xl h-40 overflow-hidden cursor-pointer group block">
+                <img src="https://images.unsplash.com/photo-1508973379184-7517410fb0bc?auto=format&fit=crop&w=400&q=80" alt="Хип-Хоп" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent group-hover:from-black/70 transition"></div>
+                <span class="font-bold text-2xl absolute bottom-4 left-4 drop-shadow-md text-white">Хип-Хоп</span>
+            </a>
+
+            <a asp-action="Category" asp-route-type="Genre" asp-route-name="Джаз" class="relative rounded-xl h-40 overflow-hidden cursor-pointer group block">
+                <img src="https://images.unsplash.com/photo-1511192336575-5a79af67a629?auto=format&fit=crop&w=400&q=80" alt="Джаз" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent group-hover:from-black/70 transition"></div>
+                <span class="font-bold text-2xl absolute bottom-4 left-4 drop-shadow-md text-white">Джаз</span>
+            </a>
+
+            <a asp-action="Category" asp-route-type="Genre" asp-route-name="Классика" class="relative rounded-xl h-40 overflow-hidden cursor-pointer group block">
+                <img src="https://images.unsplash.com/photo-1507838153414-b4b713384a76?auto=format&fit=crop&w=400&q=80" alt="Классика" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent group-hover:from-black/70 transition"></div>
+                <span class="font-bold text-2xl absolute bottom-4 left-4 drop-shadow-md text-white">Классика</span>
+            </a>
+
+            <a asp-action="Category" asp-route-type="Genre" asp-route-name="Инди" class="relative rounded-xl h-40 overflow-hidden cursor-pointer group block">
+                <img src="https://images.unsplash.com/photo-1493225457124-a1a2a5f27c32?auto=format&fit=crop&w=400&q=80" alt="Инди" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent group-hover:from-black/70 transition"></div>
+                <span class="font-bold text-2xl absolute bottom-4 left-4 drop-shadow-md text-white">Инди</span>
+            </a>
+
+            <a asp-action="Category" asp-route-type="Genre" asp-route-name="R&B" class="relative rounded-xl h-40 overflow-hidden cursor-pointer group block">
+                <img src="https://images.unsplash.com/photo-1493225255756-d9584f8606e9?auto=format&fit=crop&w=400&q=80" alt="R&B" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent group-hover:from-black/70 transition"></div>
+                <span class="font-bold text-2xl absolute bottom-4 left-4 drop-shadow-md text-white">R&B</span>
+            </a>
+
+            <a asp-action="Category" asp-route-type="Genre" asp-route-name="Метал" class="relative rounded-xl h-40 overflow-hidden cursor-pointer group block">
+                <img src="https://images.unsplash.com/photo-1598387181032-a3103a2db5b3?auto=format&fit=crop&w=400&q=80" alt="Метал" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent group-hover:from-black/70 transition"></div>
+                <span class="font-bold text-2xl absolute bottom-4 left-4 drop-shadow-md text-white">Метал</span>
+            </a>
+
+            <a asp-action="Category" asp-route-type="Genre" asp-route-name="Альтернатива" class="relative rounded-xl h-40 overflow-hidden cursor-pointer group block">
+                <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=400&q=80" alt="Альтернатива" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent group-hover:from-black/70 transition"></div>
+                <span class="font-bold text-2xl absolute bottom-4 left-4 drop-shadow-md text-white">Альтернатива</span>
+            </a>
+
+            <a asp-action="Category" asp-route-type="Genre" asp-route-name="Шансон" class="relative rounded-xl h-40 overflow-hidden cursor-pointer group block">
+                <img src="https://images.unsplash.com/photo-1525201548942-d8732f6617a0?auto=format&fit=crop&w=400&q=80" alt="Шансон" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent group-hover:from-black/70 transition"></div>
+                <span class="font-bold text-2xl absolute bottom-4 left-4 drop-shadow-md text-white">Шансон</span>
+            </a>
+
+            <a asp-action="Category" asp-route-type="Genre" asp-route-name="Фолк" class="relative rounded-xl h-40 overflow-hidden cursor-pointer group block">
+                <img src="https://images.unsplash.com/photo-1459749411175-04bf5292ceea?auto=format&fit=crop&w=400&q=80" alt="Фолк" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent group-hover:from-black/70 transition"></div>
+                <span class="font-bold text-2xl absolute bottom-4 left-4 drop-shadow-md text-white">Фолк</span>
+            </a>
+        </div>
+    }
+</div>

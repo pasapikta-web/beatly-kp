@@ -1,0 +1,119 @@
+﻿@using Beatly.Models
+@model Track
+
+@{
+    ViewData["Title"] = "Добавить новый трек";
+}
+
+<div class="max-w-2xl mx-auto p-6">
+    <h2 class="text-3xl font-bold text-white mb-6">Добавить новый трек</h2>
+
+    <form asp-controller="Home" asp-action="Create" method="post" enctype="multipart/form-data" class="space-y-6 bg-[#1a1f26] p-8 rounded-2xl shadow-xl border border-gray-800/50">
+        <div asp-validation-summary="ModelOnly" class="bg-red-500/10 border border-red-500/50 rounded-xl p-3 text-red-500 text-xs"></div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-2">
+                <label asp-for="Title" class="block text-xs font-bold text-gray-500 uppercase tracking-wider">Название</label>
+                <input asp-for="Title" class="w-full bg-[#0f1216] border border-gray-800 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-[#499BED] outline-none transition" placeholder="Введите название..." required />
+                <span asp-validation-for="Title" class="text-xs text-red-500"></span>
+            </div>
+
+            <div class="space-y-2">
+                <label asp-for="Artist" class="block text-xs font-bold text-gray-500 uppercase tracking-wider">Исполнитель</label>
+                <input asp-for="Artist" class="w-full bg-[#0f1216] border border-gray-800 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-[#499BED] outline-none transition" placeholder="Имя исполнителя..." required />
+                <span asp-validation-for="Artist" class="text-xs text-red-500"></span>
+            </div>
+        </div>
+
+        <div class="space-y-2">
+            <label asp-for="Album" class="block text-xs font-bold text-gray-500 uppercase tracking-wider">Альбом</label>
+            <input asp-for="Album" class="w-full bg-[#0f1216] border border-gray-800 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-[#499BED] outline-none transition" placeholder="Название альбома..." />
+            <span asp-validation-for="Album" class="text-xs text-red-500"></span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-6">
+            <div class="space-y-2">
+                <label asp-for="Genre" class="block text-xs font-bold text-gray-500 uppercase tracking-wider">Жанр</label>
+                <select asp-for="Genre" class="w-full bg-[#0f1216] border border-gray-800 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-[#499BED] outline-none transition cursor-pointer" required>
+                    <option value="" disabled selected>Выберите жанр</option>
+                    <option value="Рок">Рок</option>
+                    <option value="Поп">Поп</option>
+                    <option value="Электроника">Электроника</option>
+                    <option value="Хип-Хоп">Хип-Хоп</option>
+                    <option value="Джаз">Джаз</option>
+                    <option value="Классика">Классика</option>
+                    <option value="Инди">Инди</option>
+                    <option value="R&B">R&B</option>
+                    <option value="Метал">Метал</option>
+                    <option value="Альтернатива">Альтернатива</option>
+                    <option value="Шансон">Шансон</option>
+                    <option value="Фолк">Фолк</option>
+                </select>
+                <span asp-validation-for="Genre" class="text-xs text-red-500"></span>
+            </div>
+
+            <div class="space-y-2">
+                <label asp-for="Mood" class="block text-xs font-bold text-gray-500 uppercase tracking-wider">Настроение</label>
+                <select asp-for="Mood" class="w-full bg-[#0f1216] border border-gray-800 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-[#499BED] outline-none transition cursor-pointer" required>
+                    <option value="" disabled selected>Выберите настроение</option>
+                    <option value="Релакс">Релакс</option>
+                    <option value="Энергия">Энергия</option>
+                    <option value="Фокус">Фокус</option>
+                    <option value="Вечеринка">Вечеринка</option>
+                    <option value="Сон">Сон</option>
+                    <option value="Спорт">Спорт</option>
+                    <option value="Романтика">Романтика</option>
+                    <option value="Дорога">Дорога</option>
+                    <option value="Гейминг">Гейминг</option>
+                    <option value="Меланхолия">Меланхолия</option>
+                    <option value="Утро">Утро</option>
+                    <option value="Чилл">Чилл</option>
+                    <option value="Медитация">Медитация</option>
+                    <option value="Вдохновение">Вдохновение</option>
+                    <option value="Ностальгия">Ностальгия</option>
+                    <option value="Природа">Природа</option>
+                    <option value="Ночь">Ночь</option>
+                    <option value="Драйв">Драйв</option>
+                    <option value="Закат">Закат</option>
+                    <option value="Мечты">Мечты</option>
+                    <option value="Лето">Лето</option>
+                    <option value="Зима">Зима</option>
+                    <option value="Творчество">Творчество</option>
+                    <option value="Уют">Уют</option>
+                </select>
+                <span asp-validation-for="Mood" class="text-xs text-red-500"></span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-2">
+                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider">Файл аудио (.mp3)</label>
+                <input type="file" name="trackFile" accept="audio/*" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-[#499BED] file:text-white file:font-bold hover:file:brightness-110 transition" required />
+            </div>
+
+            <div class="space-y-2">
+                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider">Обложка</label>
+                <input type="file" name="coverFile" accept="image/*" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-[#499BED] file:text-white file:font-bold hover:file:brightness-110 transition" required />
+            </div>
+        </div>
+
+        <div class="space-y-2">
+            <label asp-for="Duration" class="block text-xs font-bold text-gray-500 uppercase tracking-wider">Длительность</label>
+            <input asp-for="Duration" class="w-full bg-[#0f1216] border border-gray-800 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-[#499BED] outline-none transition" placeholder="3:45" required />
+            <span asp-validation-for="Duration" class="text-xs text-red-500"></span>
+        </div>
+
+        <div class="flex gap-4 pt-4">
+            <button type="submit" class="flex-1 bg-[#499BED] text-white px-6 py-4 rounded-xl font-bold hover:shadow-[0_0_20px_rgba(73,155,237,0.4)] active:scale-[0.98] transition">
+                Опубликовать
+            </button>
+            <a asp-action="Index" class="flex-1 bg-transparent border border-gray-700 text-gray-400 px-6 py-4 rounded-xl font-bold text-center hover:bg-gray-800 hover:text-white transition">
+                Отмена
+            </a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

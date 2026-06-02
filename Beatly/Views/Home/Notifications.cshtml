@@ -1,0 +1,99 @@
+﻿@model List<Beatly.Services.NotificationItem>
+@{
+    ViewData["Title"] = "Уведомления";
+}
+
+<div class="max-w-2xl mx-auto space-y-4 pb-20">
+    <div class="flex items-center justify-between mb-8">
+        <h2 class="text-2xl font-black text-white">Уведомления</h2>
+        @if (Model.Any())
+        {
+            <form asp-action="ClearNotifications" method="post">
+                <button type="submit" class="text-xs text-[#499BED] hover:underline bg-transparent border-0 p-0 cursor-pointer font-semibold transition">
+                    Очистить всё
+                </button>
+            </form>
+        }
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="flex flex-col items-center justify-center py-20 text-center space-y-4">
+            <div class="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center text-gray-500">
+                <span class="material-symbols-outlined text-3xl">notifications_off</span>
+            </div>
+            <div>
+                <h3 class="text-lg font-bold text-white">У вас нет уведомлений</h3>
+                <p class="text-sm text-gray-500 max-w-xs mt-1">Мы обязательно сообщим вам, когда произойдет что-то важное.</p>
+            </div>
+        </div>
+    }
+    else
+    {
+        @foreach (Beatly.Services.NotificationItem item in Model)
+        {
+            <div id="notification-@item.Id" onclick="@(!item.IsRead ? $"markAsRead({item.Id})" : "")" class="p-4 rounded-2xl border flex gap-4 transition cursor-pointer @(item.IsRead ? "bg-white/5 border-white/5 opacity-70 hover:opacity-100" : "bg-[#499BED]/10 border-[#499BED]/20 hover:bg-[#499BED]/15")">
+                <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition @(item.IsRead ? "bg-white/10 text-gray-400" : "bg-[#499BED] text-white")">
+                    <span class="material-symbols-outlined">@item.Icon</span>
+                </div>
+                <div class="flex-1">
+                    <div class="flex justify-between items-start">
+                        <h4 class="font-bold text-sm text-white">@item.Title</h4>
+                        @if (!item.IsRead)
+                        {
+                            <span class="text-[10px] text-[#499BED] font-bold uppercase tracking-widest notification-badge">Новое</span>
+                        }
+                    </div>
+                    <p class="text-xs text-gray-400 mt-1 leading-relaxed">@item.Message</p>
+                    <div class="flex items-center justify-between mt-2">
+                        <span class="text-[10px] text-gray-500">@item.CreatedAt.ToLocalTime().ToString("HH:mm, dd MMM")</span>
+                        @if (!item.IsRead)
+                        {
+                            <button onclick="event.stopPropagation(); markAsRead(@item.Id)" class="text-[10px] font-bold text-[#499BED] hover:underline notification-btn">
+                                Прочитано
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function markAsRead(id) {
+            const formData = new FormData();
+            formData.append('id', id);
+
+            fetch('/Home/MarkNotificationAsRead', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    const block = document.getElementById('notification-' + id);
+                    if (block) {
+                        block.classList.remove('bg-[#499BED]/10', 'border-[#499BED]/20', 'hover:bg-[#499BED]/15');
+                        block.classList.add('bg-white/5', 'border-white/5', 'opacity-70', 'hover:opacity-100');
+
+                        const iconBox = block.querySelector('.w-10.h-10');
+                        if (iconBox) {
+                            iconBox.classList.remove('bg-[#499BED]', 'text-white');
+                            iconBox.classList.add('bg-white/10', 'text-gray-400');
+                        }
+
+                        const badge = block.querySelector('.notification-badge');
+                        if (badge) badge.remove();
+
+                        const btn = block.querySelector('.notification-btn');
+                        if (btn) btn.remove();
+
+                        block.removeAttribute('onclick');
+                    }
+                }
+            });
+        }
+    </script>
+}

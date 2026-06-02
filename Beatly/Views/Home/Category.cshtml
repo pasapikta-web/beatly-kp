@@ -1,0 +1,53 @@
+﻿@model Beatly.Models.CategoryViewModel
+@{
+    ViewData["Title"] = Model?.Name ?? ViewContext.RouteData.Values["name"] ?? "Категория";
+}
+<div class="p-8 text-white min-h-screen">
+    <div class="mb-8">
+        <a asp-action="Discovery" asp-controller="Home" class="text-sm text-gray-400 hover:text-white transition flex items-center gap-1 mb-2">
+            <span class="material-symbols-outlined text-sm">arrow_back</span> Назад в обзор
+        </a>
+        <h1 class="text-4xl font-black text-white">@ViewData["Title"]</h1>
+    </div>
+
+    @if (Model?.Tracks != null && Model.Tracks.Any())
+    {
+        <div class="space-y-2">
+            @foreach (var track in Model.Tracks)
+            {
+                <div class="grid grid-cols-[auto_1fr_auto] items-center gap-4 p-4 rounded-xl hover:bg-white/5 transition group cursor-pointer"
+                     data-audio="@track.AudioUrl"
+                     data-title="@track.Title"
+                     data-artist="@track.Artist"
+                     data-cover="@track.CoverUrl"
+                     onclick="window.playTrackFromElement(this)">
+
+                    <span class="text-gray-500 group-hover:hidden w-6">@track.Id</span>
+                    <span class="material-symbols-outlined text-[#499BED] hidden group-hover:block w-6">play_arrow</span>
+
+                    <div class="flex items-center gap-4">
+                        <img src="@track.CoverUrl" class="w-12 h-12 rounded-lg object-cover" />
+                        <div>
+                            <div class="font-bold">@track.Title</div>
+                            <div class="text-sm text-gray-400">@track.Artist</div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-8">
+                        <span class="text-sm text-gray-500 hidden md:block">@track.Album</span>
+                        <div class="flex items-center gap-4">
+                            <button type="button" onclick="event.stopPropagation(); toggleLike('@track.Id', this)" class="like-btn flex items-center justify-center transition hover:scale-110">
+                                <span class="material-symbols-outlined @(track.IsLiked ? "text-red-500 fill-1" : "text-gray-400")">favorite</span>
+                            </button>
+                            <span class="text-sm text-gray-500 w-10">@track.Duration</span>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-20 text-gray-500">В этой категории пока нет доступных треков.</div>
+    }
+</div>
