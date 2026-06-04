@@ -14,6 +14,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Hosting;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Beatly.Controllers
 {
@@ -98,6 +100,9 @@ namespace Beatly.Controllers
             var tracks = await _context.Tracks.ToListAsync();
             await SetLikedStatusAsync(tracks);
 
+            var jsonOptions = new JsonSerializerOptions { ReferenceHandler = ReferenceHandler.IgnoreCycles };
+            ViewBag.Playlist = JsonSerializer.Serialize(tracks, jsonOptions);
+
             return View(tracks ?? new List<Track>());
         }
 
@@ -107,6 +112,9 @@ namespace Beatly.Controllers
 
             var tracks = await _context.Tracks.ToListAsync();
             await SetLikedStatusAsync(tracks);
+
+            var jsonOptions = new JsonSerializerOptions { ReferenceHandler = ReferenceHandler.IgnoreCycles };
+            ViewBag.Playlist = JsonSerializer.Serialize(tracks, jsonOptions);
 
             List<IGrouping<string?, Track>> groupedTracks = tracks
                 .GroupBy(t => (string?)t.Mood)
@@ -134,6 +142,9 @@ namespace Beatly.Controllers
             var tracks = await tracksQuery.ToListAsync();
             await SetLikedStatusAsync(tracks);
 
+            var jsonOptions = new JsonSerializerOptions { ReferenceHandler = ReferenceHandler.IgnoreCycles };
+            ViewBag.Playlist = JsonSerializer.Serialize(tracks, jsonOptions);
+
             return View(tracks ?? new List<Track>());
         }
 
@@ -145,6 +156,9 @@ namespace Beatly.Controllers
 
             var tracks = await _context.Tracks.Where(t => t.Artist == name).ToListAsync();
             await SetLikedStatusAsync(tracks);
+
+            var jsonOptions = new JsonSerializerOptions { ReferenceHandler = ReferenceHandler.IgnoreCycles };
+            ViewBag.Playlist = JsonSerializer.Serialize(tracks, jsonOptions);
 
             var viewModel = new ArtistProfileViewModel
             {
@@ -179,6 +193,9 @@ namespace Beatly.Controllers
             var tracks = await tracksQuery.ToListAsync();
             await SetLikedStatusAsync(tracks);
 
+            var jsonOptions = new JsonSerializerOptions { ReferenceHandler = ReferenceHandler.IgnoreCycles };
+            ViewBag.Playlist = JsonSerializer.Serialize(tracks, jsonOptions);
+
             var viewModel = new CategoryViewModel
             {
                 Name = name,
@@ -202,6 +219,9 @@ namespace Beatly.Controllers
                 .ToListAsync();
 
             foreach (var t in likedTracks) t.IsLiked = true;
+
+            var jsonOptions = new JsonSerializerOptions { ReferenceHandler = ReferenceHandler.IgnoreCycles };
+            ViewBag.Playlist = JsonSerializer.Serialize(likedTracks, jsonOptions);
 
             var viewModel = new LibraryViewModel
             {
@@ -227,6 +247,9 @@ namespace Beatly.Controllers
                 .ToListAsync();
 
             foreach (var t in likedTracks) t.IsLiked = true;
+
+            var jsonOptions = new JsonSerializerOptions { ReferenceHandler = ReferenceHandler.IgnoreCycles };
+            ViewBag.Playlist = JsonSerializer.Serialize(likedTracks, jsonOptions);
 
             return View(likedTracks);
         }
@@ -510,6 +533,9 @@ namespace Beatly.Controllers
 
             var tracks = await _context.Tracks.Where(t => t.Album == name).ToListAsync();
             await SetLikedStatusAsync(tracks);
+
+            var jsonOptions = new JsonSerializerOptions { ReferenceHandler = ReferenceHandler.IgnoreCycles };
+            ViewBag.Playlist = JsonSerializer.Serialize(tracks, jsonOptions);
 
             var viewModel = new Beatly.Models.AlbumDetailsViewModel
             {

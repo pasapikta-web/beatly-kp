@@ -1,4 +1,4 @@
-﻿@{
+@{
     bool isPremium = User.Identity.IsAuthenticated && (User.HasClaim(c => c.Type == "Premium" && c.Value == "True") || User.IsInRole("Premium"));
 }
 <!DOCTYPE html>
@@ -225,6 +225,7 @@
         if (window.isRepeat === undefined) window.isRepeat = false;
         if (window.playlist === undefined) window.playlist = [];
         if (window.currentIndex === undefined) window.currentIndex = -1;
+        window.serverPlaylist = @Html.Raw(ViewBag.Playlist ?? "[]");
 
         window.playTrackFromElement = function (element) {
         const audioUrl = element.getAttribute('data-audio');
@@ -239,7 +240,7 @@
         playerContainer.style.display = 'flex';
         }
 
-        window.updatePlaylist();
+        window.updatePlaylist(element);
 
         if (window.audioPlayerInstance.src !== window.location.origin + audioUrl && !window.audioPlayerInstance.src.endsWith(audioUrl)) {
         window.audioPlayerInstance.src = audioUrl;
@@ -277,8 +278,18 @@
         return `${min}:${sec < 10 ? '0' : ''}${sec}`;
         };
 
-        window.updatePlaylist = function () {
-        const trackElements = document.querySelectorAll('[data-audio]');
+        window.updatePlaylist = function (startElement) {
+        let container = document;
+        if (startElement) {
+            const possibleContainer = startElement.closest('.album-tracks, #home-tracks-container, .main-tracks, tbody, .space-y-2, .category-section');
+            if (possibleContainer && possibleContainer.querySelectorAll('[data-audio]').length > 1) {
+                container = possibleContainer;
+            } else if (startElement.parentElement && startElement.parentElement.querySelectorAll('[data-audio]').length > 1) {
+                container = startElement.parentElement;
+            }
+        }
+
+        const trackElements = container.querySelectorAll('[data-audio]');
         if (trackElements.length > 0) {
         window.playlist = Array.from(trackElements).map(el => ({
         url: el.getAttribute('data-audio'),
@@ -286,6 +297,13 @@
         artist: el.getAttribute('data-artist'),
         cover: el.getAttribute('data-cover')
         }));
+        } else if (window.serverPlaylist && window.serverPlaylist.length > 0) {
+            window.playlist = window.serverPlaylist.map(t => ({
+                url: t.AudioUrl || t.Url || t.url,
+                title: t.Title || t.title,
+                artist: t.Artist || t.artist,
+                cover: t.CoverUrl || t.CoverPath || t.cover
+            }));
         }
         };
 
@@ -398,7 +416,7 @@
         const progress = (audio.currentTime / audio.duration) * 100;
         const pBar = document.getElementById('progress-bar');
         const cTimeEl = document.getElementById('current-time');
-        if (pBar) pBar.value = progress;
+        if (pBar && document.activeElement !== pBar) pBar.value = progress;
         if (cTimeEl) cTimeEl.innerText = window.formatTime(audio.currentTime);
         }
         });
@@ -420,11 +438,16 @@
         }
 
         if (progressBar) {
-        progressBar.oninput = () => {
+        progressBar.addEventListener('input', () => {
         if (audio.duration) {
         audio.currentTime = (progressBar.value * audio.duration) / 100;
         }
-        };
+        });
+        progressBar.addEventListener('change', () => {
+        if (audio.duration) {
+        audio.currentTime = (progressBar.value * audio.duration) / 100;
+        }
+        });
         }
 
         if (volumeSlider) {
