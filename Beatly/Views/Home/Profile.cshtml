@@ -1,5 +1,7 @@
 ﻿@model Beatly.Models.ProfileViewModel
-
+@{
+    ViewData["HideSearch"] = true;
+}
 @if (Model == null)
 {
     <h2>Пользователь не найден. Пожалуйста, авторизуйтесь.</h2>
@@ -336,3 +338,8 @@ else
         });
     </script>
 }
+<style>
+    header .relative:has(input) {
+        visibility: hidden !important;
+    }
+</style>
