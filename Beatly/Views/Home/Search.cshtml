@@ -1,4 +1,4 @@
-﻿@model IEnumerable<Beatly.Models.Track>
+@model IEnumerable<Beatly.Models.Track>
 
 @{
     ViewData["Title"] = "Поиск";
@@ -6,13 +6,35 @@
 
 <div class="p-8 text-white min-h-screen">
 
-    <div class="mb-8">
-        <form asp-action="Search" method="get" class="relative max-w-3xl">
+    <div class="mb-8 relative max-w-3xl">
+        <form asp-action="Search" method="get" class="relative w-full">
             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
             </div>
-            <input type="text" name="query" class="w-full bg-[#1c1c24] text-white rounded-full py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Поиск треков, артистов..." value="@Context.Request.Query["query"]" />
+            <input type="text" id="pageSearchInput" name="query" class="w-full bg-[#1c1c24] text-white rounded-full py-3 pl-10 pr-10 focus:outline-none focus:ring-2 focus:ring-[#499BED] transition-all" placeholder="Поиск треков, артистов..." value="@Context.Request.Query["query"]" autocomplete="off" />
+            <button type="button" id="pageClearSearchBtn" class="hidden absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-white transition">
+                <span class="material-symbols-outlined text-lg">close</span>
+            </button>
         </form>
+
+        <!-- Smart Search Dropdown -->
+        <div id="pageSearchDropdown" class="hidden absolute left-0 right-0 top-full mt-2 bg-[#1c1c24] border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50">
+            <div class="p-2 max-h-[450px] overflow-y-auto custom-scrollbar">
+                <div id="pageSearchTracksSection" class="mb-3 hidden">
+                    <div class="text-[11px] font-bold text-gray-500 uppercase tracking-wider px-3 py-2">Треки</div>
+                    <div id="pageTracksContainer" class="space-y-0.5"></div>
+                </div>
+
+                <div id="pageSearchArtistsSection" class="hidden">
+                    <div class="text-[11px] font-bold text-gray-500 uppercase tracking-wider px-3 py-2">Исполнители</div>
+                    <div id="pageArtistsContainer" class="space-y-0.5"></div>
+                </div>
+
+                <div id="pageSearchEmptyState" class="hidden text-center py-8 text-sm text-gray-400">
+                    Ничего не найдено
+                </div>
+            </div>
+        </div>
     </div>
 
     @if (Model != null && Model.Any())
@@ -118,3 +140,145 @@
         </div>
     }
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('turbo:load', () => {
+            const searchInput = document.getElementById('pageSearchInput');
+            const searchDropdown = document.getElementById('pageSearchDropdown');
+            const clearBtn = document.getElementById('pageClearSearchBtn');
+
+            const tracksSection = document.getElementById('pageSearchTracksSection');
+            const tracksContainer = document.getElementById('pageTracksContainer');
+            const artistsSection = document.getElementById('pageSearchArtistsSection');
+            const artistsContainer = document.getElementById('pageArtistsContainer');
+            const emptyState = document.getElementById('pageSearchEmptyState');
+
+            let debounceTimeout;
+
+            if (!searchInput) return;
+
+            searchInput.addEventListener('input', () => {
+                const query = searchInput.value.trim();
+
+                if (query.length > 0) {
+                    clearBtn.classList.remove('hidden');
+                } else {
+                    clearBtn.classList.add('hidden');
+                    hideDropdown();
+                    return;
+                }
+
+                clearTimeout(debounceTimeout);
+                debounceTimeout = setTimeout(() => {
+                    fetchSuggestions(query);
+                }, 300);
+            });
+
+            clearBtn.addEventListener('click', () => {
+                searchInput.value = '';
+                clearBtn.classList.add('hidden');
+                hideDropdown();
+                searchInput.focus();
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!searchInput.contains(e.target) && !searchDropdown.contains(e.target)) {
+                    hideDropdown();
+                }
+            });
+
+            searchInput.addEventListener('focus', () => {
+                if (searchInput.value.trim().length > 0) {
+                    searchDropdown.classList.remove('hidden');
+                }
+            });
+
+            function hideDropdown() {
+                if (searchDropdown) searchDropdown.classList.add('hidden');
+            }
+
+            function fetchSuggestions(query) {
+                fetch(`/api/searchapi/suggest?query=${encodeURIComponent(query)}`)
+                    .then(res => {
+                        if (!res.ok) throw new Error();
+                        return res.json();
+                    })
+                    .then(data => {
+                        renderSuggestions(data);
+                    })
+                    .catch(() => {
+                        hideDropdown();
+                    });
+            }
+
+            function renderSuggestions(data) {
+                tracksContainer.innerHTML = '';
+                artistsContainer.innerHTML = '';
+
+                const hasTracks = data.tracks && data.tracks.length > 0;
+                const hasArtists = data.artists && data.artists.length > 0;
+
+                if (!hasTracks && !hasArtists) {
+                    tracksSection.classList.add('hidden');
+                    artistsSection.classList.add('hidden');
+                    emptyState.classList.remove('hidden');
+                    searchDropdown.classList.remove('hidden');
+                    return;
+                }
+
+                emptyState.classList.add('hidden');
+
+                if (hasTracks) {
+                    data.tracks.forEach(track => {
+                        const trackRow = document.createElement('div');
+                        trackRow.className = "flex items-center gap-3 p-2 hover:bg-white/5 rounded-xl cursor-pointer transition group";
+                        trackRow.onclick = () => {
+                            if (typeof window.playTrack === 'function') {
+                                window.playTrack(track.url || `/audio/${track.id}.mp3`, track.title, track.artist, track.coverPath);
+                            } else {
+                                location.href = `/Tracks/Details/${track.id}`;
+                            }
+                        };
+                        trackRow.innerHTML = `
+                        <div class="w-10 h-10 rounded-lg overflow-hidden bg-gray-800 flex-shrink-0 relative">
+                            <img src="${track.coverPath || '/images/default-cover.png'}" class="w-full h-full object-cover">
+                            <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <span class="material-symbols-outlined text-white text-xl">play_arrow</span>
+                            </div>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="text-sm font-semibold text-white truncate">${track.title}</div>
+                            <div class="text-xs text-gray-400 truncate mt-0.5">${track.artist}</div>
+                        </div>
+                        `;
+                        tracksContainer.appendChild(trackRow);
+                    });
+                    tracksSection.classList.remove('hidden');
+                } else {
+                    tracksSection.classList.add('hidden');
+                }
+
+                if (hasArtists) {
+                    data.artists.forEach(artist => {
+                        const artistRow = document.createElement('div');
+                        artistRow.className = "flex items-center gap-3 p-2.5 hover:bg-white/5 rounded-xl cursor-pointer transition text-sm font-medium text-gray-200 hover:text-white";
+                        artistRow.onclick = () => {
+                            location.href = `/Home/Search?query=${encodeURIComponent(artist)}`;
+                        };
+                        artistRow.innerHTML = `
+                        <span class="material-symbols-outlined text-gray-400 text-lg">music_note</span>
+                        <span class="truncate">${artist}</span>
+                        `;
+                        artistsContainer.appendChild(artistRow);
+                    });
+                    artistsSection.classList.remove('hidden');
+                } else {
+                    artistsSection.classList.add('hidden');
+                }
+
+                searchDropdown.classList.remove('hidden');
+            }
+        });
+    </script>
+}

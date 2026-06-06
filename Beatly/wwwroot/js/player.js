@@ -1,4 +1,4 @@
-﻿window.BeatlyPlayer = window.BeatlyPlayer || {
+window.BeatlyPlayer = window.BeatlyPlayer || {
     audio: null,
     isShuffle: false,
     isRepeat: false,
@@ -90,7 +90,7 @@ window.toggleLike = function (trackId, button) {
             var progress = (current / duration) * 100;
             
             var progressBar = document.getElementById('progress-bar') || document.querySelector('.progress-slider');
-            if (progressBar && document.activeElement !== progressBar) {
+            if (progressBar && document.activeElement !== progressBar && !window.BeatlyPlayer.isDraggingSlider) {
                 progressBar.value = progress;
             }
 
@@ -503,9 +503,7 @@ window.toggleLike = function (trackId, button) {
 
         document.addEventListener('input', function (e) {
             if (e.target.matches('#progress-bar') || e.target.matches('.progress-slider')) {
-                if (player.audio && player.audio.duration) {
-                    player.audio.currentTime = (e.target.value * player.audio.duration) / 100;
-                }
+                window.BeatlyPlayer.isDraggingSlider = true;
             }
             if (e.target.matches('#volume-slider') || e.target.matches('.volume-slider')) {
                 if (player.audio) {
@@ -516,6 +514,7 @@ window.toggleLike = function (trackId, button) {
 
         document.addEventListener('change', function (e) {
             if (e.target.matches('#progress-bar') || e.target.matches('.progress-slider')) {
+                window.BeatlyPlayer.isDraggingSlider = false;
                 if (player.audio && player.audio.duration) {
                     player.audio.currentTime = (e.target.value * player.audio.duration) / 100;
                 }
