@@ -416,7 +416,7 @@
         const progress = (audio.currentTime / audio.duration) * 100;
         const pBar = document.getElementById('progress-bar');
         const cTimeEl = document.getElementById('current-time');
-        if (pBar && document.activeElement !== pBar) pBar.value = progress;
+        if (pBar && document.activeElement !== pBar && !window.isDraggingSlider) pBar.value = progress;
         if (cTimeEl) cTimeEl.innerText = window.formatTime(audio.currentTime);
         }
         });
@@ -438,12 +438,23 @@
         }
 
         if (progressBar) {
+        progressBar.addEventListener('mousedown', () => {
+            window.isDraggingSlider = true;
+        });
+        progressBar.addEventListener('touchstart', () => {
+            window.isDraggingSlider = true;
+        }, {passive: true});
+        progressBar.addEventListener('mouseup', () => {
+            window.isDraggingSlider = false;
+        });
+        progressBar.addEventListener('touchend', () => {
+            window.isDraggingSlider = false;
+        });
         progressBar.addEventListener('input', () => {
-        if (audio.duration) {
-        audio.currentTime = (progressBar.value * audio.duration) / 100;
-        }
+        window.isDraggingSlider = true;
         });
         progressBar.addEventListener('change', () => {
+        window.isDraggingSlider = false;
         if (audio.duration) {
         audio.currentTime = (progressBar.value * audio.duration) / 100;
         }

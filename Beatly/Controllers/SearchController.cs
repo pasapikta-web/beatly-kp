@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Beatly.Data;
 
@@ -35,7 +35,7 @@ namespace Beatly.Controllers
                     Title = t.Title ?? "Без названия",
                     Artist = t.Artist ?? "Неизвестный исполнитель",
                     CoverPath = t.CoverPath ?? "/images/default-cover.png",
-                    Url = t.Url ?? ""
+                    Url = !string.IsNullOrEmpty(t.AudioUrl) ? t.AudioUrl : (t.Url ?? "")
                 })
                 .ToListAsync();
 
