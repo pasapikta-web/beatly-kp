@@ -5,18 +5,29 @@
 }
 
 <div class="space-y-8">
-    <h2 class="text-3xl font-black text-white">Исполнители</h2>
+    <div class="flex items-center justify-between">
+        <div>
+            <h2 class="text-4xl font-black text-white tracking-tight">Исполнители</h2>
+            <p class="text-sm text-gray-400 mt-1">Откройте для себя авторов вашей любимой музыки</p>
+        </div>
+        <div class="text-xs font-bold text-[#499BED] bg-[#499BED]/10 px-4 py-2 rounded-full border border-[#499BED]/20">
+            Всего: @Model.Count()
+        </div>
+    </div>
 
     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
         @foreach (var artist in Model)
         {
-            <div class="bg-[#181a20] p-6 rounded-[2rem] border border-white/5 hover:bg-white/10 transition text-center group cursor-pointer">
-                <div class="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-tr from-[#499BED] to-cyan-500 flex items-center justify-center shadow-lg shadow-[#499BED]/20">
-                    <span class="text-2xl font-black text-white">@artist.Key[0]</span>
+            <a asp-action="ArtistDetails" asp-route-name="@artist.Key" class="bg-[#181a20]/60 backdrop-blur-md p-6 rounded-[2rem] border border-white/5 hover:border-[#499BED]/30 hover:bg-[#1f222b] transition-all duration-300 text-center group cursor-pointer block transform hover:-translate-y-1 hover:shadow-xl hover:shadow-[#499BED]/5">
+                <div class="relative w-28 h-28 mx-auto mb-4 rounded-full bg-gradient-to-tr from-[#499BED] to-cyan-500 flex items-center justify-center shadow-lg shadow-[#499BED]/10 group-hover:shadow-[#499BED]/30 group-hover:scale-105 transition-all duration-300">
+                    <span class="text-3xl font-black text-white transform group-hover:rotate-6 transition-transform duration-300">@artist.Key[0]</span>
+                    <div class="absolute inset-0 rounded-full bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <span class="material-symbols-outlined text-white text-3xl">play_arrow</span>
+                    </div>
                 </div>
-                <h3 class="font-bold text-white truncate">@artist.Key</h3>
-                <p class="text-[#499BED] text-[10px] font-bold uppercase mt-1">Артист</p>
-            </div>
+                <h3 class="font-bold text-white text-lg truncate group-hover:text-[#499BED] transition-colors">@artist.Key</h3>
+                <p class="text-[#499BED] text-[10px] font-black uppercase tracking-wider mt-1.5 px-3 py-0.5 bg-[#499BED]/10 rounded-full inline-block">Артист</p>
+            </a>
         }
     </div>
 </div>

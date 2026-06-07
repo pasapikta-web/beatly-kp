@@ -3,58 +3,75 @@
     ViewData["Title"] = Model.Tracks?.FirstOrDefault()?.Album ?? "Альбом";
 }
 
-<div class="p-8 text-white min-h-screen">
-    <a asp-action="Albums" asp-controller="Home" class="inline-flex items-center gap-2 text-gray-400 hover:text-white mb-6 font-medium transition group">
-        <span class="material-symbols-outlined transition-transform group-hover:-translate-x-1">arrow_back</span>
-        Назад к альбомам
-    </a>
+<div class="p-8 text-white min-h-screen space-y-6">
+    <div>
+        <a asp-action="Albums" asp-controller="Home" class="inline-flex items-center gap-2.5 bg-[#181a20]/40 backdrop-blur-md text-gray-400 hover:text-white font-bold px-5 py-2.5 rounded-full border border-white/5 hover:border-[#499BED]/30 transition-all duration-300 group shadow-lg hover:shadow-[#499BED]/5 text-sm">
+            <span class="material-symbols-outlined text-xl transition-transform group-hover:-translate-x-1">arrow_back</span>
+            Назад к альбомам
+        </a>
+    </div>
 
-    <div class="flex flex-col md:flex-row items-center gap-8 mb-10">
-        <img src="@(Model.Tracks?.FirstOrDefault()?.CoverUrl ?? "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400")" class="w-48 h-48 rounded-3xl shadow-2xl object-cover" />
-        <div>
-            <span class="text-xs font-bold text-[#499BED] uppercase tracking-wider">Альбом</span>
-            <h1 class="text-5xl font-black mt-2 mb-4">@(Model.Tracks?.FirstOrDefault()?.Album ?? "Неизвестный альбом")</h1>
-            <p class="text-gray-400">@(Model.Tracks?.FirstOrDefault()?.Artist ?? "Неизвестный исполнитель") • @(Model.Tracks?.Count() ?? 0) треков</p>
+    <div class="flex flex-col md:flex-row items-center gap-8 mb-10 pt-2">
+        @{
+            var firstTrack = Model.Tracks?.FirstOrDefault();
+            var albumCover = firstTrack?.CoverUrl?.Replace("wwwroot/", "").Replace("wwwroot\\", "").Replace("\\", "/") ?? "https://placehold.co/200x200?text=No+Cover";
+            if (!albumCover.StartsWith("/") && !albumCover.Contains("http"))
+            {
+                albumCover = "/" + albumCover;
+            }
+        }
+        <img src="@albumCover" class="w-48 h-48 rounded-3xl shadow-2xl object-cover border border-white/5" onerror="this.onerror=null; this.src='https://placehold.co/200x200?text=No+Cover';" />
+        <div class="text-center md:text-left">
+            <span class="text-xs font-bold text-[#499BED] uppercase tracking-wider bg-[#499BED]/10 px-3 py-1 rounded-full border border-[#499BED]/20 inline-block">Альбом</span>
+            <h1 class="text-5xl font-black mt-3 mb-4 tracking-tight">@(firstTrack?.Album ?? "Неизвестный альбом")</h1>
+            <p class="text-gray-400 font-medium">@(firstTrack?.Artist ?? "Неизвестный исполнитель") • @(Model.Tracks?.Count() ?? 0) треков</p>
         </div>
     </div>
 
-    <div class="space-y-2">
+    <div class="space-y-1 bg-[#181a20]/40 backdrop-blur-md rounded-[2rem] border border-white/5 overflow-hidden p-2">
         @if (Model.Tracks != null && Model.Tracks.Any())
         {
+            int index = 1;
             @foreach (var track in Model.Tracks)
             {
-                <div class="grid grid-cols-[auto_1fr_auto] items-center gap-4 p-4 rounded-xl hover:bg-white/5 transition group cursor-pointer"
+                var trackCover = track.CoverUrl?.Replace("wwwroot/", "").Replace("wwwroot\\", "").Replace("\\", "/") ?? "https://placehold.co/200x200?text=No+Cover";
+                if (!trackCover.StartsWith("/") && !trackCover.Contains("http"))
+                {
+                    trackCover = "/" + trackCover;
+                }
+
+                <div class="grid grid-cols-[auto_1fr_auto] items-center gap-4 p-4 rounded-[1.5rem] hover:bg-white/5 transition group cursor-pointer"
                      data-audio="@track.AudioUrl"
                      data-title="@track.Title"
                      data-artist="@track.Artist"
-                     data-cover="@track.CoverUrl"
+                     data-cover="@trackCover"
                      onclick="window.playTrackFromElement(this)">
 
-                    <span class="text-gray-500 group-hover:hidden w-6">@track.Id</span>
-                    <span class="material-symbols-outlined text-[#499BED] hidden group-hover:block w-6">play_arrow</span>
+                    <div class="flex items-center gap-4 min-w-0">
+                        <span class="w-6 text-center font-bold text-gray-500 group-hover:hidden text-sm">@(index++)</span>
+                        <span class="material-symbols-outlined text-[#499BED] hidden group-hover:block w-6 text-xl">play_arrow</span>
 
-                    <div class="flex items-center gap-4">
-                        <img src="@track.CoverUrl" class="w-12 h-12 rounded-lg object-cover" />
-                        <div>
-                            <div class="font-bold">@track.Title</div>
-                            <div class="text-sm text-gray-400">@track.Artist</div>
+                        <img src="@trackCover" class="w-12 h-12 rounded-xl object-cover shadow-md flex-shrink-0" onerror="this.onerror=null; this.src='https://placehold.co/200x200?text=No+Cover';" />
+                        <div class="min-w-0">
+                            <div class="font-bold text-sm md:text-base truncate group-hover:text-[#499BED] transition-colors">@track.Title</div>
+                            <div class="text-xs text-gray-400 truncate mt-0.5">@track.Artist</div>
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-8">
-                        <div class="flex items-center gap-4">
-                            <button type="button" onclick="event.stopPropagation(); toggleLike('@track.Id', this)" class="like-btn flex items-center justify-center transition hover:scale-110">
-                                <span class="material-symbols-outlined @(track.IsLiked ? "text-red-500 fill-1" : "text-gray-400")">favorite</span>
-                            </button>
-                            <span class="text-sm text-gray-500 w-10">@track.Duration</span>
-                        </div>
+                    <div></div>
+
+                    <div class="flex items-center gap-6 ml-4">
+                        <button type="button" onclick="event.stopPropagation(); toggleLike('@track.Id', this)" class="like-btn text-gray-500 hover:scale-110 transition-transform">
+                            <span class="material-symbols-outlined @(track.IsLiked ? "text-red-500 fill-1" : "text-gray-400")">favorite</span>
+                        </button>
+                        <span class="text-xs md:text-sm font-bold text-gray-400 w-10 text-right">@track.Duration</span>
                     </div>
                 </div>
             }
         }
         else
         {
-            <div class="text-center py-20 text-gray-500">В этом альбоме нет треков.</div>
+            <div class="text-center py-20 text-gray-500 font-medium">В этом альбоме нет треков.</div>
         }
     </div>
 </div>

@@ -564,5 +564,54 @@ namespace Beatly.Controllers
             }
             return "/uploads/" + folderName + "/" + fileName;
         }
+
+        public async Task<IActionResult> ArtistDetails(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                return NotFound();
+            }
+
+            var artistTracks = await _context.Tracks
+                .Where(t => t.Artist == name)
+                .ToListAsync();
+
+            if (!artistTracks.Any())
+            {
+                return NotFound();
+            }
+
+            SetNotificationCount();
+            await SetLikedStatusAsync(artistTracks);
+
+            var jsonOptions = new JsonSerializerOptions { ReferenceHandler = ReferenceHandler.IgnoreCycles };
+            ViewBag.Playlist = JsonSerializer.Serialize(artistTracks, jsonOptions);
+
+            ViewBag.ArtistName = name;
+
+            var albumsData = artistTracks
+                .Where(t => !string.IsNullOrEmpty(t.Album))
+                .GroupBy(t => t.Album)
+                .Select(g => new
+                {
+                    AlbumName = g.Key,
+                    CoverUrl = g.FirstOrDefault(t => !string.IsNullOrEmpty(t.CoverUrl) && !t.CoverUrl.Contains("default"))?.CoverUrl
+                               ?? "https://placehold.co/200x200?text=No+Cover"
+                })
+                .ToList()
+                .Select(a => {
+                    var cleanCover = a.CoverUrl.Replace("wwwroot/", "").Replace("wwwroot\\", "").Replace("\\", "/");
+                    if (!cleanCover.StartsWith("/") && !cleanCover.StartsWith("http"))
+                    {
+                        cleanCover = "/" + cleanCover;
+                    }
+                    return new Tuple<string, string>(a.AlbumName!, cleanCover);
+                })
+                .ToList();
+
+            ViewBag.Albums = albumsData;
+
+            return View(artistTracks);
+        }
     }
 }

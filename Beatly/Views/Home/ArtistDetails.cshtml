@@ -1,0 +1,139 @@
+﻿@model IEnumerable<Beatly.Models.Track>
+
+@{
+    ViewData["Title"] = ViewBag.ArtistName;
+}
+
+<div class="space-y-6 animate-fade-in">
+    <div>
+        <a asp-action="Artists" asp-controller="Home" class="inline-flex items-center gap-2.5 bg-[#181a20]/40 backdrop-blur-md text-gray-400 hover:text-white font-bold px-5 py-2.5 rounded-full border border-white/5 hover:border-[#499BED]/30 transition-all duration-300 group shadow-lg hover:shadow-[#499BED]/5 text-sm">
+            <span class="material-symbols-outlined text-xl transition-transform group-hover:-translate-x-1">arrow_back</span>
+            Назад к исполнителям
+        </a>
+    </div>
+
+    <div class="relative rounded-[2.5rem] overflow-hidden bg-gradient-to-r from-[#1e293b] via-[#0f172a] to-[#181a20] border border-white/5 shadow-2xl">
+        <div class="absolute inset-0 bg-gradient-to-tr from-[#499BED]/10 to-transparent opacity-60"></div>
+        <div class="absolute -right-10 -top-10 w-72 h-72 bg-[#499BED]/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="relative p-8 md:p-12 flex flex-col md:flex-row items-center gap-8 z-10">
+            <div class="w-36 h-36 md:w-44 md:h-44 rounded-full bg-gradient-to-tr from-[#499BED] to-cyan-500 flex items-center justify-center shadow-2xl shadow-[#499BED]/20 border-4 border-white/5 flex-shrink-0">
+                <span class="text-5xl md:text-6xl font-black text-white">@ViewBag.ArtistName[0]</span>
+            </div>
+
+            <div class="text-center md:text-left flex-1 space-y-4">
+                <div class="flex items-center justify-center md:justify-start gap-2">
+                    <span class="bg-[#499BED] text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-sm shadow-[#499BED]/30">Верифицированный исполнитель</span>
+                </div>
+                <h1 class="text-4xl md:text-6xl font-black text-white tracking-tight">@ViewBag.ArtistName</h1>
+                <p class="text-gray-400 text-sm md:text-base max-w-xl font-medium">
+                    Слушайте лучшие релизы и эксклюзивные треки исполнителя @ViewBag.ArtistName на Beatly.
+                </p>
+
+                <div class="flex flex-wrap items-center justify-center md:justify-start gap-4 pt-2">
+                    @if (Model != null && Model.Any())
+                    {
+                        var firstTrack = Model.First();
+                        var firstCover = firstTrack.CoverUrl?.Replace("wwwroot/", "").Replace("wwwroot\\", "").Replace("\\", "/") ?? "";
+                        if (!firstCover.StartsWith("/") && !string.IsNullOrEmpty(firstCover)) firstCover = "/" + firstCover;
+
+                        <button data-audio="@firstTrack.AudioUrl" data-title="@firstTrack.Title" data-artist="@firstTrack.Artist" data-cover="@firstCover" onclick="window.playTrackFromElement(this)" class="bg-[#499BED] hover:bg-[#3b82f6] text-white font-bold px-8 py-3.5 rounded-full shadow-lg shadow-[#499BED]/20 hover:shadow-[#499BED]/40 transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2 group">
+                            <span class="material-symbols-outlined text-white fill-1 group-hover:scale-110 transition-transform">play_arrow</span>
+                            Слушать микс
+                        </button>
+                    }
+                </div>
+            </div>
+
+            <div class="hidden lg:grid grid-cols-2 gap-4 bg-black/20 backdrop-blur-md p-6 rounded-[2rem] border border-white/5 text-center min-w-[240px]">
+                <div>
+                    <p class="text-2xl font-black text-white">@Model.Count()</p>
+                    <p class="text-[11px] text-gray-400 font-bold uppercase tracking-wider mt-0.5">Треков</p>
+                </div>
+                <div>
+                    <p class="text-2xl font-black text-[#499BED]">@(((List<Tuple<string, string>>)ViewBag.Albums).Count)</p>
+                    <p class="text-[11px] text-gray-400 font-bold uppercase tracking-wider mt-0.5">Альбомов</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-8 items-start">
+        <div class="xl:col-span-2 space-y-4">
+            <h2 class="text-2xl font-black text-white tracking-tight">Популярные треки</h2>
+            <div class="bg-[#181a20]/40 backdrop-blur-md rounded-[2rem] border border-white/5 overflow-hidden p-2">
+                <div class="space-y-1">
+                    @{
+                        int index = 1;
+                    }
+                    @foreach (var track in Model)
+                    {
+                        var trackCover = track.CoverUrl?.Replace("wwwroot/", "").Replace("wwwroot\\", "").Replace("\\", "/") ?? "https://placehold.co/200x200?text=No+Cover";
+                        if (!trackCover.StartsWith("/") && !trackCover.Contains("http"))
+                        {
+                            trackCover = "/" + trackCover;
+                        }
+
+                        <div class="grid grid-cols-[auto_1fr_auto] items-center gap-4 p-4 rounded-[1.5rem] hover:bg-white/5 transition-all group cursor-pointer"
+                             data-audio="@track.AudioUrl"
+                             data-title="@track.Title"
+                             data-artist="@track.Artist"
+                             data-cover="@trackCover"
+                             onclick="window.playTrackFromElement(this)">
+
+                            <div class="flex items-center gap-4 min-w-0">
+                                <span class="w-6 text-center font-bold text-gray-500 group-hover:hidden text-sm">@(index++)</span>
+                                <span class="material-symbols-outlined text-[#499BED] hidden group-hover:block w-6 text-xl">play_arrow</span>
+
+                                <img src="@trackCover" class="w-12 h-12 rounded-xl object-cover shadow-md flex-shrink-0" onerror="this.onerror=null; this.src='https://placehold.co/200x200?text=No+Cover';" />
+
+                                <div class="min-w-0">
+                                    <p class="font-bold text-white text-sm md:text-base truncate group-hover:text-[#499BED] transition-colors">@track.Title</p>
+                                    <p class="text-xs text-gray-400 truncate mt-0.5">@track.Artist</p>
+                                </div>
+                            </div>
+
+                            <div></div>
+
+                            <div class="flex items-center gap-6 ml-4">
+                                <span class="hidden md:inline text-sm text-gray-400 max-w-[150px] truncate">@(string.IsNullOrEmpty(track.Album) ? "Сингл" : track.Album)</span>
+                                <button type="button" onclick="event.stopPropagation(); toggleLike('@track.Id', this)" class="like-btn flex items-center justify-center transition hover:scale-110">
+                                    <span class="material-symbols-outlined @(track.IsLiked ? "text-red-500 fill-1" : "text-gray-400")">favorite</span>
+                                </button>
+                                <span class="text-xs md:text-sm font-bold text-gray-400 w-10 text-right">@track.Duration</span>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="space-y-4">
+            <h2 class="text-2xl font-black text-white tracking-tight">Альбомы</h2>
+            <div class="space-y-3">
+                @if (ViewBag.Albums != null && ((List<Tuple<string, string>>)ViewBag.Albums).Any())
+                {
+                    @foreach (var album in (List<Tuple<string, string>>)ViewBag.Albums)
+                    {
+                        <a asp-controller="Home" asp-action="AlbumDetails" asp-route-name="@album.Item1" class="bg-[#181a20]/50 backdrop-blur-md p-4 rounded-[1.5rem] border border-white/5 flex items-center gap-4 hover:bg-[#1f222b] hover:border-[#499BED]/20 transition-all duration-300 group cursor-pointer block">
+                            <img src="@album.Item2" class="w-16 h-16 rounded-xl object-cover shadow-lg group-hover:scale-105 transition-transform duration-300" onerror="this.onerror=null; this.src='https://placehold.co/200x200?text=No+Cover';" />
+                            <div class="min-w-0 flex-1">
+                                <h4 class="font-bold text-white text-sm md:text-base truncate group-hover:text-[#499BED] transition-colors">@album.Item1</h4>
+                                <p class="text-xs text-gray-400 mt-0.5">Альбом • @ViewBag.ArtistName</p>
+                            </div>
+                            <div class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <span class="material-symbols-outlined text-sm">chevron_right</span>
+                            </div>
+                        </a>
+                    }
+                }
+                else
+                {
+                    <div class="bg-[#181a20]/30 p-8 rounded-[1.5rem] border border-white/5 text-center">
+                        <p class="text-sm text-gray-400">У исполнителя нет альбомов</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
