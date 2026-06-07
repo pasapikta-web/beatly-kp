@@ -2,138 +2,187 @@
 
 @{
     ViewData["Title"] = ViewBag.ArtistName;
+    bool isFollowing = ViewBag.IsFollowing ?? false;
+    var albums = ViewBag.Albums as List<Tuple<string, string>> ?? new List<Tuple<string, string>>();
+    var likedAlbumNames = ViewBag.LikedAlbumNames as List<string> ?? new List<string>();
 }
 
-<div class="space-y-6 animate-fade-in">
-    <div>
-        <a asp-action="Artists" asp-controller="Home" class="inline-flex items-center gap-2.5 bg-[#181a20]/40 backdrop-blur-md text-gray-400 hover:text-white font-bold px-5 py-2.5 rounded-full border border-white/5 hover:border-[#499BED]/30 transition-all duration-300 group shadow-lg hover:shadow-[#499BED]/5 text-sm">
+<div id="toastContainer" class="fixed top-6 right-6 z-50 flex flex-col gap-3 pointer-events-none"></div>
+
+<div class="p-6 font-sans min-h-screen text-white">
+    <div class="mb-6">
+        <a asp-action="Artists" class="inline-flex items-center gap-2.5 bg-[#181a20]/40 backdrop-blur-md text-gray-400 hover:text-white font-bold px-5 py-2.5 rounded-full border border-white/5 hover:border-[#499BED]/30 transition-all duration-300 group shadow-lg hover:shadow-[#499BED]/5 text-sm">
             <span class="material-symbols-outlined text-xl transition-transform group-hover:-translate-x-1">arrow_back</span>
-            Назад к исполнителям
+            Вернуться к исполнителям
         </a>
     </div>
 
-    <div class="relative rounded-[2.5rem] overflow-hidden bg-gradient-to-r from-[#1e293b] via-[#0f172a] to-[#181a20] border border-white/5 shadow-2xl">
-        <div class="absolute inset-0 bg-gradient-to-tr from-[#499BED]/10 to-transparent opacity-60"></div>
-        <div class="absolute -right-10 -top-10 w-72 h-72 bg-[#499BED]/10 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="flex items-end gap-6 mb-8 w-full relative">
+        <div class="w-48 h-48 rounded-full bg-gradient-to-tr from-[#499BED] to-cyan-500 flex items-center justify-center shadow-2xl text-white text-6xl font-black uppercase">
+            @(!string.IsNullOrEmpty(ViewBag.ArtistName) ? ViewBag.ArtistName.Substring(0, 1) : "?")
+        </div>
+        <div class="flex flex-col gap-2 flex-1">
+            <span class="text-xs font-bold text-[#499BED] tracking-wider uppercase flex items-center gap-1">
+                <span class="material-symbols-outlined text-sm fill-1">verified</span> Исполнитель
+            </span>
+            <h1 class="text-5xl font-black text-white tracking-tight">@ViewBag.ArtistName</h1>
 
-        <div class="relative p-8 md:p-12 flex flex-col md:flex-row items-center gap-8 z-10">
-            <div class="w-36 h-36 md:w-44 md:h-44 rounded-full bg-gradient-to-tr from-[#499BED] to-cyan-500 flex items-center justify-center shadow-2xl shadow-[#499BED]/20 border-4 border-white/5 flex-shrink-0">
-                <span class="text-5xl md:text-6xl font-black text-white">@ViewBag.ArtistName[0]</span>
-            </div>
-
-            <div class="text-center md:text-left flex-1 space-y-4">
-                <div class="flex items-center justify-center md:justify-start gap-2">
-                    <span class="bg-[#499BED] text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-sm shadow-[#499BED]/30">Верифицированный исполнитель</span>
-                </div>
-                <h1 class="text-4xl md:text-6xl font-black text-white tracking-tight">@ViewBag.ArtistName</h1>
-                <p class="text-gray-400 text-sm md:text-base max-w-xl font-medium">
-                    Слушайте лучшие релизы и эксклюзивные треки исполнителя @ViewBag.ArtistName на Beatly.
-                </p>
-
-                <div class="flex flex-wrap items-center justify-center md:justify-start gap-4 pt-2">
-                    @if (Model != null && Model.Any())
-                    {
-                        var firstTrack = Model.First();
-                        var firstCover = firstTrack.CoverUrl?.Replace("wwwroot/", "").Replace("wwwroot\\", "").Replace("\\", "/") ?? "";
-                        if (!firstCover.StartsWith("/") && !string.IsNullOrEmpty(firstCover)) firstCover = "/" + firstCover;
-
-                        <button data-audio="@firstTrack.AudioUrl" data-title="@firstTrack.Title" data-artist="@firstTrack.Artist" data-cover="@firstCover" onclick="window.playTrackFromElement(this)" class="bg-[#499BED] hover:bg-[#3b82f6] text-white font-bold px-8 py-3.5 rounded-full shadow-lg shadow-[#499BED]/20 hover:shadow-[#499BED]/40 transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2 group">
-                            <span class="material-symbols-outlined text-white fill-1 group-hover:scale-110 transition-transform">play_arrow</span>
-                            Слушать микс
-                        </button>
-                    }
-                </div>
-            </div>
-
-            <div class="hidden lg:grid grid-cols-2 gap-4 bg-black/20 backdrop-blur-md p-6 rounded-[2rem] border border-white/5 text-center min-w-[240px]">
-                <div>
-                    <p class="text-2xl font-black text-white">@Model.Count()</p>
-                    <p class="text-[11px] text-gray-400 font-bold uppercase tracking-wider mt-0.5">Треков</p>
-                </div>
-                <div>
-                    <p class="text-2xl font-black text-[#499BED]">@(((List<Tuple<string, string>>)ViewBag.Albums).Count)</p>
-                    <p class="text-[11px] text-gray-400 font-bold uppercase tracking-wider mt-0.5">Альбомов</p>
-                </div>
+            <div class="flex items-center gap-3 mt-2">
+                <button id="followBtn" onclick="toggleFollowArtist('@ViewBag.ArtistName')" class="@(isFollowing ? "bg-white/10 hover:bg-white/20 text-white border-white/20" : "bg-[#499BED] hover:bg-[#3b82f6] text-white border-transparent") border px-6 py-2.5 rounded-xl font-bold text-sm transition-all duration-300 shadow-md flex items-center gap-2">
+                    <span class="material-symbols-outlined text-lg">@(isFollowing ? "person_remove" : "person_add")</span>
+                    <span id="followBtnText">@(isFollowing ? "Вы подписаны" : "Подписаться")</span>
+                </button>
             </div>
         </div>
     </div>
 
-    <div class="grid grid-cols-1 xl:grid-cols-3 gap-8 items-start">
-        <div class="xl:col-span-2 space-y-4">
-            <h2 class="text-2xl font-black text-white tracking-tight">Популярные треки</h2>
-            <div class="bg-[#181a20]/40 backdrop-blur-md rounded-[2rem] border border-white/5 overflow-hidden p-2">
-                <div class="space-y-1">
-                    @{
-                        int index = 1;
-                    }
-                    @foreach (var track in Model)
-                    {
-                        var trackCover = track.CoverUrl?.Replace("wwwroot/", "").Replace("wwwroot\\", "").Replace("\\", "/") ?? "https://placehold.co/200x200?text=No+Cover";
-                        if (!trackCover.StartsWith("/") && !trackCover.Contains("http"))
-                        {
-                            trackCover = "/" + trackCover;
-                        }
+    @if (albums.Any())
+    {
+        <div class="mb-10">
+            <h2 class="text-2xl font-black text-white mb-4 tracking-tight">Альбомы</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                @foreach (var album in albums)
+                {
+                    bool isAlbumLiked = likedAlbumNames.Contains(album.Item1);
+                    <div class="bg-[#181a20]/40 border border-white/5 p-4 rounded-[2rem] flex flex-col relative group backdrop-blur-md hover:border-[#499BED]/20 transition-all duration-300">
+                        <a asp-action="AlbumDetails" asp-route-name="@album.Item1" class="absolute inset-0 checked:z-0"></a>
 
-                        <div class="grid grid-cols-[auto_1fr_auto] items-center gap-4 p-4 rounded-[1.5rem] hover:bg-white/5 transition-all group cursor-pointer"
-                             data-audio="@track.AudioUrl"
-                             data-title="@track.Title"
-                             data-artist="@track.Artist"
-                             data-cover="@trackCover"
-                             onclick="window.playTrackFromElement(this)">
-
-                            <div class="flex items-center gap-4 min-w-0">
-                                <span class="w-6 text-center font-bold text-gray-500 group-hover:hidden text-sm">@(index++)</span>
-                                <span class="material-symbols-outlined text-[#499BED] hidden group-hover:block w-6 text-xl">play_arrow</span>
-
-                                <img src="@trackCover" class="w-12 h-12 rounded-xl object-cover shadow-md flex-shrink-0" onerror="this.onerror=null; this.src='https://placehold.co/200x200?text=No+Cover';" />
-
-                                <div class="min-w-0">
-                                    <p class="font-bold text-white text-sm md:text-base truncate group-hover:text-[#499BED] transition-colors">@track.Title</p>
-                                    <p class="text-xs text-gray-400 truncate mt-0.5">@track.Artist</p>
-                                </div>
-                            </div>
-
-                            <div></div>
-
-                            <div class="flex items-center gap-6 ml-4">
-                                <span class="hidden md:inline text-sm text-gray-400 max-w-[150px] truncate">@(string.IsNullOrEmpty(track.Album) ? "Сингл" : track.Album)</span>
-                                <button type="button" onclick="event.stopPropagation(); toggleLike('@track.Id', this)" class="like-btn flex items-center justify-center transition hover:scale-110">
-                                    <span class="material-symbols-outlined @(track.IsLiked ? "text-red-500 fill-1" : "text-gray-400")">favorite</span>
-                                </button>
-                                <span class="text-xs md:text-sm font-bold text-gray-400 w-10 text-right">@track.Duration</span>
-                            </div>
+                        <div class="relative overflow-hidden rounded-2xl aspect-square mb-3 shadow-lg">
+                            <img src="@album.Item2" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                         </div>
-                    }
-                </div>
-            </div>
-        </div>
 
-        <div class="space-y-4">
-            <h2 class="text-2xl font-black text-white tracking-tight">Альбомы</h2>
-            <div class="space-y-3">
-                @if (ViewBag.Albums != null && ((List<Tuple<string, string>>)ViewBag.Albums).Any())
-                {
-                    @foreach (var album in (List<Tuple<string, string>>)ViewBag.Albums)
-                    {
-                        <a asp-controller="Home" asp-action="AlbumDetails" asp-route-name="@album.Item1" class="bg-[#181a20]/50 backdrop-blur-md p-4 rounded-[1.5rem] border border-white/5 flex items-center gap-4 hover:bg-[#1f222b] hover:border-[#499BED]/20 transition-all duration-300 group cursor-pointer block">
-                            <img src="@album.Item2" class="w-16 h-16 rounded-xl object-cover shadow-lg group-hover:scale-105 transition-transform duration-300" onerror="this.onerror=null; this.src='https://placehold.co/200x200?text=No+Cover';" />
-                            <div class="min-w-0 flex-1">
-                                <h4 class="font-bold text-white text-sm md:text-base truncate group-hover:text-[#499BED] transition-colors">@album.Item1</h4>
-                                <p class="text-xs text-gray-400 mt-0.5">Альбом • @ViewBag.ArtistName</p>
-                            </div>
-                            <div class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <span class="material-symbols-outlined text-sm">chevron_right</span>
-                            </div>
-                        </a>
-                    }
-                }
-                else
-                {
-                    <div class="bg-[#181a20]/30 p-8 rounded-[1.5rem] border border-white/5 text-center">
-                        <p class="text-sm text-gray-400">У исполнителя нет альбомов</p>
+                        <h4 class="font-bold text-white text-base truncate z-10 group-hover:text-[#499BED] transition-colors">@album.Item1</h4>
+
+                        <div class="flex items-center justify-between mt-3 pt-2 border-t border-white/5 z-10" onclick="event.stopPropagation()">
+                            <button onclick="toggleFavoriteAlbum('@album.Item1', this)" class="@(isAlbumLiked ? "text-red-500 scale-110" : "text-gray-400 hover:text-red-500") transition-all duration-300 flex items-center justify-center hover:scale-110">
+                                <span class="material-symbols-outlined @(isAlbumLiked ? "fill-1" : "")">favorite</span>
+                            </button>
+                            <span class="text-xs text-gray-500 font-medium">Альбом</span>
+                        </div>
                     </div>
                 }
             </div>
         </div>
+    }
+
+    <div class="space-y-4">
+        <h2 class="text-2xl font-black text-white tracking-tight">Популярные треки</h2>
+        <div class="space-y-1 bg-[#181a20]/40 backdrop-blur-md rounded-[2rem] border border-white/5 overflow-hidden p-2">
+            @if (Model != null && Model.Any())
+            {
+                int index = 1;
+                @foreach (var track in Model)
+                {
+                    var trackCover = track.CoverUrl?.Replace("wwwroot/", "").Replace("wwwroot\\", "").Replace("\\", "/") ?? "https://placehold.co/200x200?text=No+Cover";
+                    if (!trackCover.StartsWith("/") && !trackCover.Contains("http")) trackCover = "/" + trackCover;
+
+                    <div class="grid grid-cols-[auto_1fr_auto] items-center gap-4 p-4 rounded-[1.5rem] hover:bg-white/5 transition group cursor-pointer"
+                         data-audio="@track.AudioUrl" data-title="@track.Title" data-artist="@track.Artist" data-cover="@trackCover"
+                         onclick="window.playTrackFromElement(this)">
+
+                        <div class="flex items-center gap-4 min-w-0">
+                            <span class="w-6 text-center font-bold text-gray-500 group-hover:hidden text-sm">@(index++)</span>
+                            <span class="material-symbols-outlined text-[#499BED] hidden group-hover:block w-6 text-xl">play_arrow</span>
+
+                            <img src="@trackCover" class="w-12 h-12 rounded-xl object-cover shadow-md flex-shrink-0" />
+                            <div class="min-w-0">
+                                <div class="font-bold text-sm md:text-base truncate group-hover:text-[#499BED] transition-colors">@track.Title</div>
+                                <div class="text-xs text-gray-400 truncate mt-0.5">@track.Artist</div>
+                            </div>
+                        </div>
+                        <div></div>
+                        <div class="flex items-center gap-6 ml-4">
+                            <button type="button" onclick="event.stopPropagation(); toggleLike('@track.Id', this)" class="like-btn text-gray-500 hover:scale-110 transition-transform">
+                                <span class="material-symbols-outlined @(track.IsLiked ? "text-red-500 fill-1" : "text-gray-400")">favorite</span>
+                            </button>
+                            <span class="text-xs md:text-sm font-bold text-gray-400 w-10 text-right">@track.Duration</span>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="text-center py-20 text-gray-500 font-medium">У этого исполнителя нет треков.</div>
+            }
+        </div>
     </div>
 </div>
+
+<script>
+    function showToast(message, isSuccess = true) {
+        const container = document.getElementById("toastContainer");
+        if (!container) return;
+
+        const toast = document.createElement("div");
+        toast.className = `transform translate-x-full opacity-0 bg-[#1e1e24]/95 border-l-4 ${isSuccess ? 'border-[#499BED]' : 'border-red-500'} text-white px-5 py-4 rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.5)] flex items-center gap-4 min-w-[340px] transition-all duration-500 ease-out pointer-events-auto backdrop-blur-md border border-white/5`;
+        toast.innerHTML = `
+                        <div class="${isSuccess ? 'text-[#499BED]' : 'text-red-500'} flex items-center justify-center">
+                            <span class="material-symbols-outlined text-2xl">${isSuccess ? 'check_circle' : 'warning'}</span>
+                        </div>
+                        <div class="flex-1 text-sm font-medium text-gray-200 leading-snug">${message}</div>
+                        <button type="button" onclick="this.parentElement.remove()" class="text-gray-500 hover:text-gray-300 transition-colors flex items-center justify-center">
+                            <span class="material-symbols-outlined text-lg">close</span>
+                        </button>
+                    `;
+        container.appendChild(toast);
+        setTimeout(() => toast.classList.remove("translate-x-full", "opacity-0"), 50);
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.classList.add("translate-x-full", "opacity-0");
+                setTimeout(() => toast.remove(), 500);
+            }
+        }, 3500);
+    }
+
+    //
+    function toggleFollowArtist(artistName) {
+        const formData = new FormData();
+        formData.append('artistName', artistName);
+
+        fetch('/Home/ToggleFollowArtist', { method: 'POST', body: formData })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    const btn = document.getElementById('followBtn');
+                    const btnText = document.getElementById('followBtnText');
+                    const icon = btn.querySelector('.material-symbols-outlined');
+
+                    if (data.isFollowing) {
+                        btn.className = "bg-white/10 hover:bg-white/20 text-white border-white/20 border px-6 py-2.5 rounded-xl font-bold text-sm transition-all duration-300 shadow-md flex items-center gap-2";
+                        btnText.innerText = "Вы подписаны";
+                        icon.innerText = "person_remove";
+                    } else {
+                        btn.className = "bg-[#499BED] hover:bg-[#3b82f6] text-white border-transparent border px-6 py-2.5 rounded-xl font-bold text-sm transition-all duration-300 shadow-md flex items-center gap-2";
+                        btnText.innerText = "Подписаться";
+                        icon.innerText = "person_add";
+                    }
+                    showToast(data.message, true);
+                } else {
+                    showToast(data.message, false);
+                }
+            });
+    }
+
+    function toggleFavoriteAlbum(albumName, element) {
+        const formData = new FormData();
+        formData.append('albumName', albumName);
+
+        fetch('/Home/ToggleFavoriteAlbum', { method: 'POST', body: formData })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    const icon = element.querySelector('.material-symbols-outlined');
+                    if (data.isLiked) {
+                        element.className = "text-red-500 flex items-center justify-center scale-110 transition-all duration-300";
+                        icon.classList.add('fill-1');
+                    } else {
+                        element.className = "text-gray-400 hover:text-red-500 flex items-center justify-center transition-all duration-300";
+                        icon.classList.remove('fill-1');
+                    }
+                    showToast(data.message, true);
+                } else {
+                    showToast(data.message, false);
+                }
+            });
+    }
+</script>

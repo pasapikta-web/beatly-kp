@@ -1,227 +1,369 @@
-@model IEnumerable<Beatly.Models.Track>
+@model Beatly.Models.FavoritesViewModel
 
 @{
-    ViewData["Title"] = "Любимые треки";
+    ViewData["Title"] = "Любимое";
     bool isPremium = User.Identity.IsAuthenticated && (User.HasClaim(c => c.Type == "Premium" && c.Value == "True") || User.IsInRole("Premium"));
 }
 
 <div id="toastContainer" class="fixed top-6 right-6 z-50 flex flex-col gap-3 pointer-events-none"></div>
 
-<div class="p-6 font-sans">
+<div class="p-6 font-sans min-h-screen text-white">
     <div class="flex items-end gap-6 mb-8 w-full">
-        <div class="w-48 h-48 rounded-2xl bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center shadow-2xl shadow-black/40">
-            <span class="material-symbols-outlined text-white text-7xl fill-1">favorite</span>
+        <div class="w-48 h-48 rounded-2xl bg-gradient-to-br from-red-500 via-purple-600 to-[#0071e3] flex items-center justify-center shadow-2xl shadow-black/40 relative group">
+            <span class="material-symbols-outlined text-white text-7xl fill-1 animate-pulse">favorite</span>
         </div>
         <div class="flex flex-col gap-1 w-full flex-1">
-            <span class="text-xs font-bold text-[#0071e3] tracking-wider uppercase">Плейлист</span>
-            <h1 class="text-5xl font-black text-white tracking-tight">Любимые треки</h1>
-            <div class="flex justify-between items-end w-full">
-                <p class="text-sm text-gray-400 mt-1">
-                    Все, что вам понравилось • <span class="text-white font-medium">@Model?.Count() треков</span>
-                </p>
-                @if (isPremium && Model != null && Model.Any())
-                {
-                    <button id="downloadBtn" onclick="downloadSelectedTracks()" class="bg-white/10 text-gray-400 px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 transition duration-300 opacity-50 cursor-pointer">
-                        <span class="material-symbols-outlined text-xl">download</span>
-                        <span id="downloadBtnText">Скачать все</span>
-                    </button>
-                }
-            </div>
+            <span class="text-xs font-bold text-[#499BED] tracking-wider uppercase">Ваша медиатека</span>
+            <h1 class="text-5xl font-black text-white tracking-tight">Любимая музыка</h1>
+            <p class="text-sm text-gray-400 mt-1">Персональное пространство собранного вами контента</p>
         </div>
     </div>
 
-    @if (Model != null && Model.Any())
-    {
-        <div class="bg-[#121214]/40 border border-white/5 rounded-2xl p-4 backdrop-blur-md">
-            <div class="grid @(isPremium ? "grid-cols-[48px_32px_4fr_3fr_120px]" : "grid-cols-[48px_4fr_3fr_120px]") gap-4 px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-white/5 mb-2">
-                <span class="text-center">#</span>
-                @if (isPremium)
-                {
-                    <span class="flex items-center justify-center">
-                        <input type="checkbox" id="selectAllCheckbox" class="w-4 h-4 rounded border-gray-600 bg-gray-700 text-[#0071e3] focus:ring-[#0071e3]" onchange="toggleAllCheckboxes(this)">
+    <div class="flex border-b border-white/5 mb-6 gap-2">
+        <button onclick="switchTab('tracks')" id="tabBtn-tracks" class="tab-btn px-6 py-3 font-bold text-sm rounded-t-xl transition-all duration-300 border-b-2 border-[#499BED] text-white bg-white/5">
+            Треки (@Model.LikedTracks.Count())
+        </button>
+        <button onclick="switchTab('artists')" id="tabBtn-artists" class="tab-btn px-6 py-3 font-bold text-sm rounded-t-xl transition-all duration-300 text-gray-400 hover:text-white hover:bg-white/5">
+            Исполнители (@Model.FollowedArtists.Count())
+        </button>
+        <button onclick="switchTab('albums')" id="tabBtn-albums" class="tab-btn px-6 py-3 font-bold text-sm rounded-t-xl transition-all duration-300 text-gray-400 hover:text-white hover:bg-white/5">
+            Альбомы (@Model.LikedAlbums.Count())
+        </button>
+    </div>
+
+    <div id="tabContent-tracks" class="tab-content space-y-4">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold text-white">Понравившиеся треки</h3>
+            @if (isPremium && Model.LikedTracks.Any())
+            {
+                <button id="downloadBtn" onclick="downloadSelectedTracks()" class="bg-white/10 text-gray-400 px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 transition duration-300 opacity-50 cursor-pointer">
+                    <span class="material-symbols-outlined text-xl">download</span>
+                    <span id="downloadBtnText">Скачать все</span>
+                </button>
+            }
+        </div>
+
+        @if (Model.LikedTracks.Any())
+        {
+            <div class="bg-[#121214]/40 border border-white/5 rounded-2xl p-4 backdrop-blur-md">
+                <div class="grid @(isPremium ? "grid-cols-[48px_32px_4fr_3fr_120px]" : "grid-cols-[48px_4fr_3fr_120px]") gap-4 px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-white/5 mb-2">
+                    <span class="text-center">#</span>
+                    @if (isPremium)
+                    {
+                        <span class="flex items-center justify-center">
+                            <input type="checkbox" id="selectAllCheckbox" class="w-4 h-4 rounded border-gray-600 bg-gray-700 text-[#499BED] focus:ring-[#499BED]" onchange="toggleAllCheckboxes(this)">
+                        </span>
+                    }
+                    <span>Название</span>
+                    <span>Альбом</span>
+                    <span class="flex justify-end items-center pr-2">
+                        <span class="material-symbols-outlined text-base">schedule</span>
                     </span>
-                }
-                <span>Название</span>
-                <span>Альбом</span>
-                <span class="flex justify-end items-center pr-2">
-                    <span class="material-symbols-outlined text-base">schedule</span>
-                </span>
+                </div>
+
+                <div class="space-y-1">
+                    @{
+                        int tIndex = 1;
+                    }
+                    @foreach (var track in Model.LikedTracks)
+                    {
+                        <div class="grid @(isPremium ? "grid-cols-[48px_32px_4fr_3fr_120px]" : "grid-cols-[48px_4fr_3fr_120px]") items-center gap-4 p-3 rounded-xl border-l-2 border-transparent hover:bg-white/5 transition group cursor-pointer"
+                             onclick="playTrack('@track.AudioUrl', '@track.Title', '@track.Artist', '@track.CoverUrl')">
+
+                            <div class="relative flex items-center justify-center w-full text-sm font-semibold text-gray-400">
+                                <span class="group-hover:opacity-0 transition-opacity">@tIndex</span>
+                                <span class="material-symbols-outlined text-[#499BED] absolute opacity-0 group-hover:opacity-100 transition-opacity text-xl">play_arrow</span>
+                            </div>
+
+                            @if (isPremium)
+                            {
+                                <div class="flex items-center justify-center" onclick="event.stopPropagation()">
+                                    <input type="checkbox" value="@track.Id" class="track-checkbox w-4 h-4 rounded border-gray-600 bg-gray-700 text-[#499BED] focus:ring-[#499BED]" onchange="updateDownloadButton()">
+                                </div>
+                            }
+
+                            <div class="flex items-center gap-3 min-w-0">
+                                <img src="@track.CoverUrl" class="w-10 h-10 rounded-lg shadow-md object-cover flex-shrink-0" />
+                                <div class="truncate">
+                                    <div class="font-bold text-sm text-white truncate">@track.Title</div>
+                                    <div class="text-xs text-gray-400 group-hover:text-white transition-colors truncate">@track.Artist</div>
+                                </div>
+                            </div>
+
+                            <div class="text-sm text-gray-400 truncate pr-4">@track.Album</div>
+
+                            <div class="flex items-center justify-end gap-6 pr-2">
+                                <button type="button" onclick="event.stopPropagation(); toggleLike(@track.Id, this)" class="like-btn flex items-center justify-center transition hover:scale-110 text-red-500">
+                                    <span class="material-symbols-outlined fill-1 text-xl">favorite</span>
+                                </button>
+                                <span class="text-sm text-gray-400 font-mono w-10 text-right">@track.Duration</span>
+                            </div>
+                        </div>
+                        tIndex++;
+                    }
+                </div>
             </div>
+        }
+        else
+        {
+            <div class="flex flex-col items-center justify-center py-24 text-center bg-[#181a20]/20 border border-white/5 rounded-2xl">
+                <span class="material-symbols-outlined text-7xl text-gray-600 mb-4">music_note</span>
+                <h3 class="text-xl font-bold">Нет любимых треков</h3>
+                <p class="text-gray-400 text-sm mt-1">Добавляйте треки с помощью сердечка на главной странице.</p>
+            </div>
+        }
+    </div>
 
-            <div class="space-y-1">
-                @{
-                    int index = 1;
-                }
-                @foreach (var track in Model)
+    <div id="tabContent-artists" class="tab-content hidden space-y-4">
+        <h3 class="text-xl font-bold text-white mb-2">Подписки на исполнителей</h3>
+        @if (Model.FollowedArtists.Any())
+        {
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                @foreach (var artist in Model.FollowedArtists)
                 {
-                    <div class="grid @(isPremium ? "grid-cols-[48px_32px_4fr_3fr_120px]" : "grid-cols-[48px_4fr_3fr_120px]") items-center gap-4 p-3 rounded-xl border-l-2 border-transparent hover:bg-white/5 transition group cursor-pointer"
-                         onclick="playTrack('@track.AudioUrl', '@track.Title', '@track.Artist', '@track.CoverUrl')">
-
-                        <div class="relative flex items-center justify-center w-full text-sm font-semibold text-gray-400">
-                            <span class="group-hover:opacity-0 transition-opacity">@index</span>
-                            <span class="material-symbols-outlined text-[#0071e3] absolute opacity-0 group-hover:opacity-100 transition-opacity text-xl">play_arrow</span>
+                    <div onclick="window.location.href='@Url.Action("ArtistDetails", "Home", new { name = artist.ArtistName })'" class="bg-[#181a20]/40 border border-white/5 p-5 rounded-[2rem] flex flex-col items-center text-center relative group backdrop-blur-md hover:border-[#499BED]/20 transition-all duration-300 cursor-pointer">
+                        <div class="w-24 h-24 rounded-full bg-gradient-to-tr from-[#499BED] to-cyan-500 flex items-center justify-center shadow-lg text-white text-3xl font-black mb-4 group-hover:scale-105 transition-transform duration-300">
+                            @artist.AvatarLetter
                         </div>
+                        <h4 class="font-bold text-white text-lg truncate w-full group-hover:text-[#499BED] transition-colors">@artist.ArtistName</h4>
 
-                        @if (isPremium)
-                        {
-                            <div class="flex items-center justify-center" onclick="event.stopPropagation()">
-                                <input type="checkbox" value="@track.Id" class="track-checkbox w-4 h-4 rounded border-gray-600 bg-gray-700 text-[#0071e3] focus:ring-[#0071e3]" onchange="updateDownloadButton()">
-                            </div>
-                        }
-
-                        <div class="flex items-center gap-3 min-w-0">
-                            <img src="@track.CoverUrl" class="w-10 h-10 rounded-lg shadow-md object-cover flex-shrink-0" />
-                            <div class="truncate">
-                                <div class="font-bold text-sm text-white truncate">@track.Title</div>
-                                <div class="text-xs text-gray-400 group-hover:text-white transition-colors truncate">@track.Artist</div>
-                            </div>
-                        </div>
-
-                        <div class="text-sm text-gray-400 truncate pr-4">@track.Album</div>
-
-                        <div class="flex items-center justify-end gap-6 pr-2">
-                            <button type="button" onclick="event.stopPropagation(); toggleLike(@track.Id, this)" class="like-btn flex items-center justify-center transition hover:scale-110 text-red-500">
-                                <span class="material-symbols-outlined fill-1 text-xl">
-                                    favorite
-                                </span>
+                        <div class="flex items-center gap-2 mt-4 w-full justify-center" onclick="event.stopPropagation()">
+                            <button onclick="toggleFollowInTab('@artist.ArtistName', this)" class="bg-white/10 hover:bg-white/20 text-white font-bold px-4 py-2 rounded-xl text-xs transition duration-300">
+                                Отписаться
                             </button>
-                            <span class="text-sm text-gray-400 font-mono w-10 text-right">@track.Duration</span>
+                            @if (isPremium)
+                            {
+                                <button onclick="downloadZipContainer('/Home/DownloadArtistTracks', { name: '@artist.ArtistName' }, this)" class="bg-[#499BED]/10 hover:bg-[#499BED]/20 text-[#499BED] p-2 rounded-xl transition duration-300 flex items-center justify-center">
+                                    <span class="material-symbols-outlined text-sm">download</span>
+                                </button>
+                            }
                         </div>
                     </div>
-                    index++;
                 }
             </div>
-        </div>
-    }
-    else
-    {
-        <div class="flex flex-col items-center justify-center py-24 text-center bg-[#121214]/20 border border-white/5 rounded-2xl">
-            <span class="material-symbols-outlined text-8xl text-gray-700 mb-4">favorite</span>
-            <h2 class="text-2xl font-bold text-white">Список пуст</h2>
-            <p class="text-gray-400 mt-2">Отмечайте треки сердечком, чтобы они появились здесь.</p>
-        </div>
-    }
+        }
+        else
+        {
+            <div class="flex flex-col items-center justify-center py-24 text-center bg-[#181a20]/20 border border-white/5 rounded-2xl">
+                <span class="material-symbols-outlined text-7xl text-gray-600 mb-4">person</span>
+                <h3 class="text-xl font-bold">Вы пока ни на кого не подписаны</h3>
+                <p class="text-gray-400 text-sm mt-1">Перейдите в профиль исполнителя, чтобы оформить подписку.</p>
+            </div>
+        }
+    </div>
+
+    <div id="tabContent-albums" class="tab-content hidden space-y-4">
+        <h3 class="text-xl font-bold text-white mb-2">Сохраненные альбомы</h3>
+        @if (Model.LikedAlbums.Any())
+        {
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                @foreach (var album in Model.LikedAlbums)
+                {
+                    <div onclick="window.location.href='@Url.Action("AlbumDetails", "Home", new { name = album.AlbumName })'" class="bg-[#181a20]/40 border border-white/5 p-4 rounded-[2rem] flex flex-col relative group backdrop-blur-md hover:border-[#499BED]/20 transition-all duration-300 cursor-pointer">
+                        <div class="relative overflow-hidden rounded-2xl aspect-square mb-3 shadow-lg">
+                            <img src="@album.CoverUrl" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                        </div>
+                        <h4 class="font-bold text-white text-base truncate group-hover:text-[#499BED] transition-colors">@album.AlbumName</h4>
+
+                        <div class="flex items-center justify-between mt-3 pt-2 border-t border-white/5" onclick="event.stopPropagation()">
+                            <button onclick="toggleLikeAlbumInTab('@album.AlbumName', this)" class="text-red-500 hover:scale-110 transition-transform flex items-center justify-center">
+                                <span class="material-symbols-outlined fill-1">favorite</span>
+                            </button>
+                            @if (isPremium)
+                            {
+                                <button onclick="downloadZipContainer('/Home/DownloadAlbumTracks', { name: '@album.AlbumName' }, this)" class="text-gray-400 hover:text-white flex items-center gap-1 text-xs font-bold transition">
+                                    <span class="material-symbols-outlined text-sm">download</span> Скачать
+                                </button>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="flex flex-col items-center justify-center py-24 text-center bg-[#181a20]/20 border border-white/5 rounded-2xl">
+                <span class="material-symbols-outlined text-7xl text-gray-600 mb-4">album</span>
+                <h3 class="text-xl font-bold">Нет сохраненных альбомов</h3>
+                <p class="text-gray-400 text-sm mt-1">Используйте кнопку добавления в любимое на страницах альбомов.</p>
+            </div>
+        }
+    </div>
 </div>
 
-@if (isPremium)
-{
-    <script>
-        function showToast(message) {
-            const container = document.getElementById("toastContainer");
-            if (!container) return;
+<script>
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+        document.querySelectorAll('.tab-btn').forEach(el => {
+            el.classList.remove('border-b-2', 'border-[#499BED]', 'text-white', 'bg-white/5');
+            el.classList.add('text-gray-400');
+        });
 
-            const toast = document.createElement("div");
-            toast.className = "transform translate-x-full opacity-0 bg-[#1e1e24]/95 border-l-4 border-red-500 text-white px-5 py-4 rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.5)] flex items-center gap-4 min-w-[340px] transition-all duration-500 ease-out pointer-events-auto backdrop-blur-md border border-white/5";
+        document.getElementById(`tabContent-${tabId}`).classList.remove('hidden');
+        const activeBtn = document.getElementById(`tabBtn-${tabId}`);
+        activeBtn.classList.add('border-b-2', 'border-[#499BED]', 'text-white', 'bg-white/5');
+        activeBtn.classList.remove('text-gray-400');
+    }
 
-            toast.innerHTML = `
-                        <div class="text-red-500 flex items-center justify-center">
-                            <span class="material-symbols-outlined text-2xl">warning</span>
-                        </div>
-                        <div class="flex-1 text-sm font-medium text-gray-200 leading-snug">${message}</div>
-                        <button type="button" onclick="this.parentElement.remove()" class="text-gray-500 hover:text-gray-300 transition-colors focus:outline-none flex items-center justify-center">
-                            <span class="material-symbols-outlined text-lg">close</span>
-                        </button>
-                    `;
+    function toggleFollowInTab(artistName, element) {
+        const formData = new FormData();
+        formData.append('artistName', artistName);
 
-            container.appendChild(toast);
-            setTimeout(() => toast.classList.remove("translate-x-full", "opacity-0"), 50);
-
-            setTimeout(() => {
-                if (toast.parentNode) {
-                    toast.classList.add("translate-x-full", "opacity-0");
-                    setTimeout(() => toast.remove(), 500);
-                }
-            }, 4000);
-        }
-
-        function toggleAllCheckboxes(source) {
-            const checkboxes = document.querySelectorAll('.track-checkbox');
-            checkboxes.forEach(cb => cb.checked = source.checked);
-            updateDownloadButton();
-        }
-
-        function updateDownloadButton() {
-            const checkboxes = document.querySelectorAll('.track-checkbox');
-            const checkedCount = document.querySelectorAll('.track-checkbox:checked').length;
-            const btn = document.getElementById('downloadBtn');
-            const btnText = document.getElementById('downloadBtnText');
-
-            if (!btn || !btnText) return;
-
-            if (checkedCount > 0) {
-                btnText.innerText = `Скачать выбранные (${checkedCount})`;
-                btn.className = "bg-[#0071e3] text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 hover:bg-[#005bb5] transition hover:scale-105 active:scale-95 shadow-lg shadow-[#0071e3]/30 cursor-pointer opacity-100";
-            } else {
-                btnText.innerText = 'Скачать все';
-                btn.className = "bg-white/10 text-gray-400 px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 transition duration-300 opacity-50 cursor-pointer";
-            }
-
-            checkboxes.forEach(cb => {
-                const row = cb.closest('.grid');
-                if (!row) return;
-                if (cb.checked) {
-                    row.classList.add('bg-white/10', 'border-[#0071e3]');
-                    row.classList.remove('border-transparent', 'hover:bg-white/5');
-                } else {
-                    row.classList.remove('bg-white/10', 'border-[#0071e3]');
-                    row.classList.add('border-transparent', 'hover:bg-white/5');
+        fetch('/Home/ToggleFollowArtist', { method: 'POST', body: formData })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
                 }
             });
+    }
 
-            const selectAllCheckbox = document.getElementById('selectAllCheckbox');
-            if (selectAllCheckbox) {
-                selectAllCheckbox.checked = checkedCount === checkboxes.length && checkboxes.length > 0;
-                selectAllCheckbox.indeterminate = checkedCount > 0 && checkedCount < checkboxes.length;
-            }
+    function toggleLikeAlbumInTab(albumName, element) {
+        const formData = new FormData();
+        formData.append('albumName', albumName);
+
+        fetch('/Home/ToggleFavoriteAlbum', { method: 'POST', body: formData })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            });
+    }
+
+    function downloadZipContainer(url, bodyParams, buttonElement) {
+        const originalHtml = buttonElement.innerHTML;
+        buttonElement.disabled = true;
+        buttonElement.innerHTML = `<span class="material-symbols-outlined text-sm animate-spin">sync</span>`;
+
+        const formData = new FormData();
+        for (const key in bodyParams) {
+            formData.append(key, bodyParams[key]);
         }
 
-        function downloadSelectedTracks() {
-            const checkboxes = document.querySelectorAll('.track-checkbox:checked');
-            let selectedIds = [];
-
-            if (checkboxes.length === 0) {
-                showToast("Пожалуйста, выберите определенные треки или нажмите на главную галочку «Выбрать все» перед скачиванием.");
-                return;
-            }
-
-            checkboxes.forEach(cb => selectedIds.push(parseInt(cb.value)));
-
-            const btnText = document.getElementById('downloadBtnText');
-            const originalText = btnText.innerText;
-            btnText.innerText = 'Скачивание...';
-
-            fetch('/Track/DownloadMultiple', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(selectedIds)
+        fetch(url, { method: 'POST', body: formData })
+            .then(res => {
+                if (!res.ok) throw new Error();
+                return res.blob();
             })
-                .then(response => {
-                    if (!response.ok) throw new Error('Download failed');
-                    return response.blob();
-                })
-                .then(blob => {
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.style.display = 'none';
-                    a.href = url;
-                    a.download = 'Beatly_Tracks.zip';
-                    document.body.appendChild(a);
-                    a.click();
-                    window.URL.revokeObjectURL(url);
-                    btnText.innerText = originalText;
-                })
-                .catch(err => {
-                    console.error(err);
-                    showToast('Произошла ошибка при скачивании файла.');
-                    btnText.innerText = originalText;
-                });
+            .then(blob => {
+                const downloadUrl = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = downloadUrl;
+                a.download = 'Beatly_Collection.zip';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                buttonElement.disabled = false;
+                buttonElement.innerHTML = originalHtml;
+            })
+            .catch(() => {
+                alert('Ошибка загрузки архива.');
+                buttonElement.disabled = false;
+                buttonElement.innerHTML = originalHtml;
+            });
+    }
+
+    function showToast(message) {
+        const container = document.getElementById("toastContainer");
+        if (!container) return;
+
+        const toast = document.createElement("div");
+        toast.className = "transform translate-x-full opacity-0 bg-[#1e1e24]/95 border-l-4 border-red-500 text-white px-5 py-4 rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.5)] flex items-center gap-4 min-w-[340px] transition-all duration-500 ease-out pointer-events-auto backdrop-blur-md border border-white/5";
+        toast.innerHTML = `
+                    <div class="text-red-500 flex items-center justify-center"><span class="material-symbols-outlined text-2xl">warning</span></div>
+                    <div class="flex-1 text-sm font-medium text-gray-200 leading-snug">${message}</div>
+                    <button type="button" onclick="this.parentElement.remove()" class="text-gray-500 hover:text-gray-300 transition-colors focus:outline-none flex items-center justify-center"><span class="material-symbols-outlined text-lg">close</span></button>
+                `;
+        container.appendChild(toast);
+        setTimeout(() => toast.classList.remove("translate-x-full", "opacity-0"), 50);
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.classList.add("translate-x-full", "opacity-0");
+                setTimeout(() => toast.remove(), 500);
+            }
+        }, 4000);
+    }
+
+    function toggleAllCheckboxes(source) {
+        const checkboxes = document.querySelectorAll('.track-checkbox');
+        checkboxes.forEach(cb => cb.checked = source.checked);
+        updateDownloadButton();
+    }
+
+    function updateDownloadButton() {
+        const checkboxes = document.querySelectorAll('.track-checkbox');
+        const checkedCount = document.querySelectorAll('.track-checkbox:checked').length;
+        const btn = document.getElementById('downloadBtn');
+        const btnText = document.getElementById('downloadBtnText');
+
+        if (!btn || !btnText) return;
+
+        if (checkedCount > 0) {
+            btnText.innerText = `Скачать выбранные (${checkedCount})`;
+            btn.className = "bg-[#499BED] text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 hover:bg-[#3b82f6] transition hover:scale-105 active:scale-95 shadow-lg shadow-[#499BED]/30 cursor-pointer opacity-100";
+        } else {
+            btnText.innerText = 'Скачать все';
+            btn.className = "bg-white/10 text-gray-400 px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 transition duration-300 opacity-50 cursor-pointer";
         }
 
-        document.addEventListener("DOMContentLoaded", updateDownloadButton);
-        if (document.readyState === "complete" || document.readyState === "interactive") {
-            updateDownloadButton();
+        checkboxes.forEach(cb => {
+            const row = cb.closest('.grid');
+            if (!row) return;
+            if (cb.checked) {
+                row.classList.add('bg-white/10', 'border-[#499BED]');
+                row.classList.remove('border-transparent', 'hover:bg-white/5');
+            } else {
+                row.classList.remove('bg-white/10', 'border-[#499BED]');
+                row.classList.add('border-transparent', 'hover:bg-white/5');
+            }
+        });
+
+        const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+        if (selectAllCheckbox) {
+            selectAllCheckbox.checked = checkedCount === checkboxes.length && checkboxes.length > 0;
+            selectAllCheckbox.indeterminate = checkedCount > 0 && checkedCount < checkboxes.length;
         }
-    </script>
-}
+    }
+
+    function downloadSelectedTracks() {
+        const checkboxes = document.querySelectorAll('.track-checkbox:checked');
+        let selectedIds = [];
+
+        if (checkboxes.length === 0) {
+            showToast("Пожалуйста, выберите определенные треки перед скачиванием.");
+            return;
+        }
+
+        checkboxes.forEach(cb => selectedIds.push(parseInt(cb.value)));
+        const btnText = document.getElementById('downloadBtnText');
+        const originalText = btnText.innerText;
+        btnText.innerText = 'Скачивание...';
+
+        fetch('/Home/DownloadMultiple', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(selectedIds)
+        })
+            .then(response => {
+                if (!response.ok) throw new Error();
+                return response.blob();
+            })
+            .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'Beatly_Tracks.zip';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                btnText.innerText = originalText;
+            })
+            .catch(() => {
+                showToast('Произошла ошибка при скачивании файла.');
+                btnText.innerText = originalText;
+            });
+    }
+
+    document.addEventListener("DOMContentLoaded", updateDownloadButton);
+</script>

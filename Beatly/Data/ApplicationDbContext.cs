@@ -14,6 +14,8 @@ namespace Beatly.Data
 
         public DbSet<Track> Tracks { get; set; } = null!;
         public DbSet<FavoriteTrack> FavoriteTracks { get; set; } = null!;
+        public DbSet<FollowedArtist> FollowedArtists { get; set; } = null!;
+        public DbSet<FavoriteAlbum> FavoriteAlbums { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

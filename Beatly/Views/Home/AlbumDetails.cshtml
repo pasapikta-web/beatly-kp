@@ -1,7 +1,22 @@
 ﻿@model Beatly.Models.AlbumDetailsViewModel
+
 @{
-    ViewData["Title"] = Model.Tracks?.FirstOrDefault()?.Album ?? "Альбом";
+    var firstTrack = Model.Tracks?.FirstOrDefault();
+    ViewData["Title"] = firstTrack?.Album ?? "Альбом";
+    bool isPremium = User.Identity.IsAuthenticated && (User.HasClaim(c => c.Type == "Premium" && c.Value == "True") || User.IsInRole("Premium"));
+
+    bool isAlbumLiked = false;
+    if (ViewBag.IsAlbumLiked != null) { isAlbumLiked = ViewBag.IsAlbumLiked; }
+    else if (ViewBag.IsLiked != null) { isAlbumLiked = ViewBag.IsLiked; }
+    else if (ViewBag.LikedAlbumNames is List<string> likedList && firstTrack != null && firstTrack.Album != null && likedList.Contains(firstTrack.Album)) { isAlbumLiked = true; }
+    else if (Model.GetType().GetProperty("IsLiked")?.GetValue(Model) is bool modelLiked) { isAlbumLiked = modelLiked; }
+    else if (Model.GetType().GetProperty("IsAlbumLiked")?.GetValue(Model) is bool modelAlbumLiked) { isAlbumLiked = modelAlbumLiked; }
+
+    var albumCover = firstTrack?.CoverUrl?.Replace("wwwroot/", "").Replace("wwwroot\\", "").Replace("\\", "/") ?? "https://placehold.co/200x200?text=No+Cover";
+    if (!albumCover.StartsWith("/") && !albumCover.Contains("http")) albumCover = "/" + albumCover;
 }
+
+<div id="toastContainer" class="fixed top-6 right-6 z-50 flex flex-col gap-3 pointer-events-none"></div>
 
 <div class="p-8 text-white min-h-screen space-y-6">
     <div>
@@ -12,19 +27,19 @@
     </div>
 
     <div class="flex flex-col md:flex-row items-center gap-8 mb-10 pt-2">
-        @{
-            var firstTrack = Model.Tracks?.FirstOrDefault();
-            var albumCover = firstTrack?.CoverUrl?.Replace("wwwroot/", "").Replace("wwwroot\\", "").Replace("\\", "/") ?? "https://placehold.co/200x200?text=No+Cover";
-            if (!albumCover.StartsWith("/") && !albumCover.Contains("http"))
-            {
-                albumCover = "/" + albumCover;
-            }
-        }
-        <img src="@albumCover" class="w-48 h-48 rounded-3xl shadow-2xl object-cover border border-white/5" onerror="this.onerror=null; this.src='https://placehold.co/200x200?text=No+Cover';" />
-        <div class="text-center md:text-left">
+        <img src="@albumCover" id="albumCoverImg" class="w-48 h-48 rounded-3xl shadow-2xl object-cover border border-white/5" />
+        <div class="text-center md:text-left flex-1">
             <span class="text-xs font-bold text-[#499BED] uppercase tracking-wider bg-[#499BED]/10 px-3 py-1 rounded-full border border-[#499BED]/20 inline-block">Альбом</span>
-            <h1 class="text-5xl font-black mt-3 mb-4 tracking-tight">@(firstTrack?.Album ?? "Неизвестный альбом")</h1>
-            <p class="text-gray-400 font-medium">@(firstTrack?.Artist ?? "Неизвестный исполнитель") • @(Model.Tracks?.Count() ?? 0) треков</p>
+            <h1 id="albumTitleHeading" class="text-5xl font-black mt-3 mb-4 tracking-tight">@(firstTrack?.Album ?? "Неизвестный альбом")</h1>
+            <p id="albumArtistParam" class="text-gray-400 font-medium">@(firstTrack?.Artist ?? "Неизвестный исполнитель") • @(Model.Tracks?.Count() ?? 0) треков</p>
+
+            <div class="flex flex-wrap items-center justify-center md:justify-start gap-3 mt-5">
+                <button id="likeAlbumBtn" onclick="toggleLikeAlbum('@(firstTrack?.Album?.Replace("'", "\\'"))', '@(firstTrack?.Artist?.Replace("'", "\\'"))')"
+                        class="font-bold px-6 py-2.5 rounded-xl border transition-all duration-300 active:scale-95 flex items-center gap-2 text-sm shadow-md @(isAlbumLiked ? "bg-red-500/10 border-red-500/30 text-red-500 hover:bg-red-500/20" : "bg-white/5 border-white/10 text-white hover:bg-white/10")">
+                    <span class="material-symbols-outlined text-xl @(isAlbumLiked ? "fill-1 text-red-500" : "")">favorite</span>
+                    <span id="likeAlbumBtnText">@(isAlbumLiked ? "В любимых" : "Добавить в любимые")</span>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -35,31 +50,23 @@
             @foreach (var track in Model.Tracks)
             {
                 var trackCover = track.CoverUrl?.Replace("wwwroot/", "").Replace("wwwroot\\", "").Replace("\\", "/") ?? "https://placehold.co/200x200?text=No+Cover";
-                if (!trackCover.StartsWith("/") && !trackCover.Contains("http"))
-                {
-                    trackCover = "/" + trackCover;
-                }
+                if (!trackCover.StartsWith("/") && !trackCover.Contains("http")) trackCover = "/" + trackCover;
 
                 <div class="grid grid-cols-[auto_1fr_auto] items-center gap-4 p-4 rounded-[1.5rem] hover:bg-white/5 transition group cursor-pointer"
-                     data-audio="@track.AudioUrl"
-                     data-title="@track.Title"
-                     data-artist="@track.Artist"
-                     data-cover="@trackCover"
+                     data-audio="@track.AudioUrl" data-title="@track.Title" data-artist="@track.Artist" data-cover="@trackCover"
                      onclick="window.playTrackFromElement(this)">
 
                     <div class="flex items-center gap-4 min-w-0">
                         <span class="w-6 text-center font-bold text-gray-500 group-hover:hidden text-sm">@(index++)</span>
                         <span class="material-symbols-outlined text-[#499BED] hidden group-hover:block w-6 text-xl">play_arrow</span>
 
-                        <img src="@trackCover" class="w-12 h-12 rounded-xl object-cover shadow-md flex-shrink-0" onerror="this.onerror=null; this.src='https://placehold.co/200x200?text=No+Cover';" />
+                        <img src="@trackCover" class="w-12 h-12 rounded-xl object-cover shadow-md flex-shrink-0" />
                         <div class="min-w-0">
                             <div class="font-bold text-sm md:text-base truncate group-hover:text-[#499BED] transition-colors">@track.Title</div>
                             <div class="text-xs text-gray-400 truncate mt-0.5">@track.Artist</div>
                         </div>
                     </div>
-
                     <div></div>
-
                     <div class="flex items-center gap-6 ml-4">
                         <button type="button" onclick="event.stopPropagation(); toggleLike('@track.Id', this)" class="like-btn text-gray-500 hover:scale-110 transition-transform">
                             <span class="material-symbols-outlined @(track.IsLiked ? "text-red-500 fill-1" : "text-gray-400")">favorite</span>
@@ -75,3 +82,113 @@
         }
     </div>
 </div>
+
+<script>
+    let isAlbumLikeProcessing = false;
+
+    function setAlbumLikedUI(isLiked) {
+        const btn = document.getElementById('likeAlbumBtn');
+        const text = document.getElementById('likeAlbumBtnText');
+        const icon = btn?.querySelector('.material-symbols-outlined');
+
+        if (!btn || !text || !icon) return;
+
+        if (isLiked) {
+            btn.className = "font-bold px-6 py-2.5 rounded-xl border transition-all duration-300 active:scale-95 flex items-center gap-2 text-sm shadow-md bg-red-500/10 border-red-500/30 text-red-500 hover:bg-red-500/20";
+            text.innerText = "В любимых";
+            icon.className = "material-symbols-outlined text-xl text-red-500 fill-1";
+        } else {
+            btn.className = "font-bold px-6 py-2.5 rounded-xl border transition-all duration-300 active:scale-95 flex items-center gap-2 text-sm shadow-md bg-white/5 border-white/10 text-white hover:bg-white/10";
+            text.innerText = "Добавить в любимые";
+            icon.className = "material-symbols-outlined text-xl";
+        }
+    }
+
+    function showToast(message, isSuccess = true) {
+        const container = document.getElementById("toastContainer");
+        if (!container) return;
+
+        const toast = document.createElement("div");
+        toast.className = `transform translate-x-full opacity-0 bg-[#1e1e24]/95 border-l-4 ${isSuccess ? 'border-[#499BED]' : 'border-red-500'} text-white px-5 py-4 rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.5)] flex items-center gap-4 min-w-[340px] transition-all duration-500 ease-out pointer-events-auto backdrop-blur-md border border-white/5`;
+        toast.innerHTML = `
+                    <div class="${isSuccess ? 'text-[#499BED]' : 'text-red-500'} flex items-center justify-center">
+                        <span class="material-symbols-outlined text-2xl">${isSuccess ? 'check_circle' : 'warning'}</span>
+                    </div>
+                    <div class="flex-1 text-sm font-medium text-gray-200 leading-snug">${message}</div>
+                    <button type="button" onclick="this.parentElement.remove()" class="text-gray-500 hover:text-gray-300 transition-colors flex items-center justify-center">
+                        <span class="material-symbols-outlined text-lg">close</span>
+                    </button>
+                `;
+        container.appendChild(toast);
+        setTimeout(() => toast.classList.remove("translate-x-full", "opacity-0"), 50);
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.classList.add("translate-x-full", "opacity-0");
+                setTimeout(() => toast.remove(), 500);
+            }
+        }, 3500);
+    }
+
+    function toggleLikeAlbum(albumName, artistName) {
+        if (!albumName || isAlbumLikeProcessing) return;
+
+        isAlbumLikeProcessing = true;
+        const btn = document.getElementById('likeAlbumBtn');
+        if (btn) btn.style.pointerEvents = 'none';
+
+        const coverSrc = document.getElementById('albumCoverImg')?.getAttribute('src') || '';
+
+        const formData = new FormData();
+        formData.append('albumName', albumName);
+        formData.append('artistName', artistName);
+        formData.append('coverUrl', coverSrc);
+
+        fetch('/Home/ToggleFavoriteAlbum', { method: 'POST', body: formData })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    setAlbumLikedUI(data.isLiked);
+                    localStorage.setItem(`fav_album_${albumName}_${artistName}`, data.isLiked);
+                    showToast(data.message, true);
+                } else {
+                    showToast(data.message, false);
+                }
+            })
+            .catch(() => showToast("Ошибка соединения", false))
+            .finally(() => {
+                isAlbumLikeProcessing = false;
+                if (btn) btn.style.pointerEvents = 'auto';
+            });
+    }
+
+    function toggleLike(trackId, btnElement) {
+        const formData = new FormData();
+        formData.append('trackId', trackId);
+
+        fetch('/Home/ToggleLike', { method: 'POST', body: formData })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    const icon = btnElement.querySelector('.material-symbols-outlined');
+                    if (data.isLiked) {
+                        icon.className = "material-symbols-outlined text-red-500 fill-1";
+                    } else {
+                        icon.className = "material-symbols-outlined text-gray-400";
+                    }
+                    showToast(data.message, true);
+                }
+            });
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const albumName = '@Html.Raw(firstTrack?.Album?.Replace("'", "\\'"))';
+        const artistName = '@Html.Raw(firstTrack?.Artist?.Replace("'", "\\'"))';
+        if (albumName) {
+            const key = `fav_album_${albumName}_${artistName}`;
+            const localIsLiked = localStorage.getItem(key);
+            if (localIsLiked !== null) {
+                setAlbumLikedUI(localIsLiked === "true");
+            }
+        }
+    });
+</script>
