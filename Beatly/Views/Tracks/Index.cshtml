@@ -1,0 +1,218 @@
+﻿@model IEnumerable<Beatly.Models.Track>
+
+<div id="toastContainer" class="fixed top-6 right-6 z-50 flex flex-col gap-3 pointer-events-none"></div>
+
+<div class="p-6 bg-[#121212] min-h-screen text-white select-none">
+    <div class="flex items-end gap-6 mb-8">
+        <div class="w-48 h-48 bg-gradient-to-br from-red-500 to-red-600 rounded-2xl flex items-center justify-center shadow-2xl relative group">
+            <svg class="w-24 h-24 text-white drop-shadow-lg" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+            </svg>
+        </div>
+        <div class="flex-1">
+            <span class="text-xs font-bold uppercase tracking-wider text-gray-400">Плейлист</span>
+            <h1 class="text-5xl font-black text-white mt-2 mb-4">Любимые треки</h1>
+            <div class="text-sm text-gray-400 flex items-center gap-2">
+                <span>Все, что вам понравилось</span>
+                <span class="w-1 h-1 bg-gray-500 rounded-full"></span>
+                <span>@Model.Count() треков</span>
+            </div>
+        </div>
+        <div>
+            <button id="downloadBtn" type="button" class="bg-[#282828] text-gray-500 px-7 py-3 rounded-full font-semibold flex items-center gap-2 transition-all duration-300 opacity-60 border border-gray-700/30 cursor-pointer">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                </svg>
+                <span id="downloadBtnText">Скачать все</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="bg-[#181818]/60 border border-gray-800/30 rounded-2xl p-4 backdrop-blur-md">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="border-b border-gray-800/60 text-gray-400 text-xs font-bold tracking-wider">
+                    <th class="pb-3 text-center w-10">#</th>
+                    <th class="pb-3 text-center w-12">
+                        <div class="flex items-center justify-center">
+                            <input type="checkbox" id="selectAllCheckbox" class="w-4 h-4 rounded bg-[#282828] border-gray-700 text-[#1a73e8] focus:ring-0 focus:ring-offset-0 cursor-pointer transition-all duration-200 active:scale-75">
+                        </div>
+                    </th>
+                    <th class="pb-3 pl-2">НАЗВАНИЕ</th>
+                    <th class="pb-3">АЛЬБОМ</th>
+                    <th class="pb-3 text-right pr-6 w-20">
+                        <svg class="w-4 h-4 inline-block text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    int index = 1;
+                }
+                @foreach (var track in Model)
+                {
+                    <tr id="track-row-@track.Id" class="border-b border-transparent hover:bg-[#242424]/50 transition-all duration-300 group rounded-xl">
+                        <td class="py-3 text-center text-gray-400 text-sm font-medium duration-300 row-index">@index</td>
+                        <td class="py-3 text-center">
+                            <div class="flex items-center justify-center">
+                                <input type="checkbox" class="track-checkbox w-4 h-4 rounded bg-[#121212] border-gray-700 text-[#1a73e8] focus:ring-0 focus:ring-offset-0 cursor-pointer transition-all duration-200 active:scale-75" value="@track.Id">
+                            </div>
+                        </td>
+                        <td class="py-3 pl-2 flex items-center gap-4">
+                            <div class="w-10 h-10 bg-[#282828] rounded-lg overflow-hidden flex items-center justify-center text-gray-400 shadow-md group-hover:scale-105 transition-transform duration-300 border border-gray-800/50">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="text-white font-semibold text-sm duration-300 row-title">@track.Title</div>
+                                <div class="text-gray-400 text-xs mt-0.5 duration-300 row-artist">@track.Artist</div>
+                            </div>
+                        </td>
+                        <td class="py-3 text-gray-400 text-sm font-medium duration-300 row-album">@track.Album</td>
+                        <td class="py-3 text-right pr-6 text-gray-400 font-mono text-sm duration-300">
+                            <div class="flex items-center justify-end gap-4">
+                                <svg class="w-5 h-5 text-red-500 fill-current" viewBox="0 0 24 24">
+                                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                                </svg>
+                                <span class="row-duration">@track.Duration</span>
+                            </div>
+                        </td>
+                    </tr>
+                    index++;
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    (() => {
+        const initDownloadLogic = () => {
+            const selectAllCheckbox = document.getElementById("selectAllCheckbox");
+            const trackCheckboxes = document.querySelectorAll(".track-checkbox");
+            const downloadBtn = document.getElementById("downloadBtn");
+            const downloadBtnText = document.getElementById("downloadBtnText");
+
+            if (!downloadBtn) return;
+
+            const showToast = (message) => {
+                const container = document.getElementById("toastContainer");
+                if (!container) return;
+
+                const toast = document.createElement("div");
+                toast.className = "transform translate-x-full opacity-0 bg-[#1e1e1e]/95 border-l-4 border-red-500 text-white px-5 py-4 rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.5)] flex items-center gap-4 min-w-[340px] transition-all duration-500 ease-out pointer-events-auto backdrop-blur-md border border-gray-800/40";
+
+                toast.innerHTML = `
+                        <div class="text-red-500 animate-pulse">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                            </svg>
+                        </div>
+                        <div class="flex-1 text-sm font-medium text-gray-200 leading-snug">${message}</div>
+                        <button type="button" class="text-gray-500 hover:text-gray-300 transition-colors focus:outline-none">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    `;
+
+                container.appendChild(toast);
+                setTimeout(() => toast.classList.remove("translate-x-full", "opacity-0"), 50);
+
+                const closeToast = () => {
+                    toast.classList.add("translate-x-full", "opacity-0");
+                    setTimeout(() => toast.remove(), 500);
+                };
+
+                toast.querySelector("button").addEventListener("click", closeToast);
+                setTimeout(closeToast, 4000);
+            };
+
+            const updateVisualState = () => {
+                const checkedCount = document.querySelectorAll(".track-checkbox:checked").length;
+
+                if (checkedCount > 0) {
+                    downloadBtnText.textContent = `Скачать выбранные (${checkedCount})`;
+                    downloadBtn.className = "bg-[#1a73e8] text-white px-7 py-3 rounded-full font-semibold flex items-center gap-2 transition-all duration-300 hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(26,115,232,0.5)] cursor-pointer";
+                } else {
+                    downloadBtnText.textContent = "Скачать все";
+                    downloadBtn.className = "bg-[#282828] text-gray-500 px-7 py-3 rounded-full font-semibold flex items-center gap-2 transition-all duration-300 opacity-60 border border-gray-700/30 cursor-pointer";
+                }
+
+                trackCheckboxes.forEach(cb => {
+                    const row = document.getElementById(`track-row-${cb.value}`);
+                    if (!row) return;
+
+                    const indexCell = row.querySelector(".row-index");
+                    const titleCell = row.querySelector(".row-title");
+                    const artistCell = row.querySelector(".row-artist");
+                    const albumCell = row.querySelector(".row-album");
+                    const durationCell = row.querySelector(".row-duration");
+
+                    if (cb.checked) {
+                        row.classList.add("bg-[#1a73e8]/10", "border-l-4", "border-[#1a73e8]");
+                        row.classList.remove("hover:bg-[#242424]/50");
+                        if (indexCell) indexCell.classList.add("text-[#1a73e8]", "font-bold");
+                        if (titleCell) titleCell.classList.add("text-[#1a73e8]");
+                        if (artistCell) artistCell.classList.add("text-blue-300/80");
+                        if (albumCell) albumCell.classList.add("text-blue-200/70");
+                        if (durationCell) durationCell.classList.add("text-[#1a73e8]");
+                    } else {
+                        row.classList.remove("bg-[#1a73e8]/10", "border-l-4", "border-[#1a73e8]");
+                        row.classList.add("hover:bg-[#242424]/50");
+                        if (indexCell) indexCell.classList.remove("text-[#1a73e8]", "font-bold");
+                        if (titleCell) titleCell.classList.remove("text-[#1a73e8]");
+                        if (artistCell) artistCell.classList.remove("text-blue-300/80");
+                        if (albumCell) albumCell.classList.remove("text-blue-200/70");
+                        if (durationCell) durationCell.classList.remove("text-[#1a73e8]");
+                    }
+                });
+            };
+
+            if (selectAllCheckbox) {
+                selectAllCheckbox.addEventListener("change", (e) => {
+                    trackCheckboxes.forEach(cb => cb.checked = e.target.checked);
+                    updateVisualState();
+                });
+            }
+
+            trackCheckboxes.forEach(cb => {
+                cb.addEventListener("change", () => {
+                    const total = trackCheckboxes.length;
+                    const checked = document.querySelectorAll(".track-checkbox:checked").length;
+
+                    if (selectAllCheckbox) {
+                        selectAllCheckbox.checked = checked === total;
+                        selectAllCheckbox.indeterminate = checked > 0 && checked < total;
+                    }
+                    updateVisualState();
+                });
+            });
+
+            downloadBtn.addEventListener("click", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const checkedIds = Array.from(document.querySelectorAll(".track-checkbox:checked")).map(cb => cb.value);
+
+                if (checkedIds.length === 0) {
+                    showToast("Пожалуйста, выберите определенные треки или нажмите на главную галочку «Выбрать все» перед скачиванием.");
+                    return false;
+                }
+
+                window.location.href = `/Tracks/DownloadSelected?ids=${checkedIds.join(",")}`;
+            });
+
+            updateVisualState();
+        };
+
+        if (document.readyState === "complete" || document.readyState === "interactive") {
+            initDownloadLogic();
+        } else {
+            document.addEventListener("DOMContentLoaded", initDownloadLogic);
+        }
+    })();
+</script>
