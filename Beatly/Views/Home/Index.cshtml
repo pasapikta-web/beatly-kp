@@ -1,6 +1,16 @@
 ﻿@model IEnumerable<Beatly.Models.Track>
 @{
     ViewData["Title"] = "Главная";
+    var topArtists = Model?
+        .Where(t => !string.IsNullOrEmpty(t.Artist))
+        .GroupBy(t => t.Artist)
+        .Select(g => new
+        {
+            Name = g.Key,
+            CoverUrl = g.FirstOrDefault(t => !string.IsNullOrEmpty(t.CoverUrl))?.CoverUrl ?? "https://images.unsplash.com/photo-1516280440502-a2f02bbf61b5?w=150"
+        })
+        .Take(5)
+        .ToList();
 }
 
 <style>
@@ -151,7 +161,6 @@
     <div class="lg:col-span-2">
         <div class="flex items-center justify-between mb-6">
             <h3 class="text-3xl font-black text-white tracking-tight">Популярные треки</h3>
-            <a href="/Tracks" class="text-sm font-semibold text-[#499BED] hover:text-white transition-colors uppercase tracking-wider">Смотреть все</a>
         </div>
 
         <div class="space-y-3">
@@ -174,7 +183,9 @@
                         </div>
                         <div class="flex flex-col justify-center">
                             <div class="font-bold text-white text-base group-hover:text-[#499BED] transition-colors line-clamp-1">@track.Title</div>
-                            <div class="text-sm text-gray-400 font-medium hover:text-gray-200 transition-colors inline-block w-max">@track.Artist</div>
+                            <div class="text-sm text-gray-400 font-medium hover:text-gray-200 transition-colors inline-block w-max" onclick="event.stopPropagation();">
+                                <a asp-controller="Home" asp-action="ArtistDetails" asp-route-name="@track.Artist" class="hover:text-[#499BED] hover:underline transition-colors">@track.Artist</a>
+                            </div>
                         </div>
                     </div>
 
@@ -188,9 +199,6 @@
                                 </span>
                             </button>
                             <span class="text-sm font-medium text-gray-400 w-12 text-right">@track.Duration</span>
-                            <button type="button" onclick="event.stopPropagation()" class="text-gray-500 hover:text-white transition-colors">
-                                <span class="material-symbols-outlined">more_horiz</span>
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -202,36 +210,21 @@
         <h3 class="text-3xl font-black text-white tracking-tight mb-6">Топ Артисты</h3>
         <div class="glass-panel rounded-3xl p-6">
             <div class="flex flex-col gap-6">
-                <a href="/Artists/1" class="flex items-center gap-4 group">
-                    <img src="https://images.unsplash.com/photo-1516280440502-a2f02bbf61b5?w=150" class="w-16 h-16 rounded-full object-cover border-2 border-transparent group-hover:border-[#499BED] transition-all" />
-                    <div>
-                        <h4 class="text-white font-bold group-hover:text-[#499BED] transition-colors">The Weeknd</h4>
-                        <p class="text-xs text-gray-400 mt-1">12M слушателей</p>
-                    </div>
-                </a>
-                <a href="/Artists/2" class="flex items-center gap-4 group">
-                    <img src="https://images.unsplash.com/photo-1520813792240-56fc4a3765a7?w=150" class="w-16 h-16 rounded-full object-cover border-2 border-transparent group-hover:border-[#499BED] transition-all" />
-                    <div>
-                        <h4 class="text-white font-bold group-hover:text-[#499BED] transition-colors">Dua Lipa</h4>
-                        <p class="text-xs text-gray-400 mt-1">10.5M слушателей</p>
-                    </div>
-                </a>
-                <a href="/Artists/3" class="flex items-center gap-4 group">
-                    <img src="https://images.unsplash.com/photo-1493225457124-a1a2a5f5f4f8?w=150" class="w-16 h-16 rounded-full object-cover border-2 border-transparent group-hover:border-[#499BED] transition-all" />
-                    <div>
-                        <h4 class="text-white font-bold group-hover:text-[#499BED] transition-colors">Daft Punk</h4>
-                        <p class="text-xs text-gray-400 mt-1">8.2M слушателей</p>
-                    </div>
-                </a>
-                <a href="/Artists/4" class="flex items-center gap-4 group">
-                    <img src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=150" class="w-16 h-16 rounded-full object-cover border-2 border-transparent group-hover:border-[#499BED] transition-all" />
-                    <div>
-                        <h4 class="text-white font-bold group-hover:text-[#499BED] transition-colors">Kavinsky</h4>
-                        <p class="text-xs text-gray-400 mt-1">5M слушателей</p>
-                    </div>
-                </a>
+                @if (topArtists != null)
+                {
+                    @foreach (var artist in topArtists)
+                    {
+                        <a asp-controller="Home" asp-action="ArtistDetails" asp-route-name="@artist.Name" class="flex items-center gap-4 group">
+                            <img src="@artist.CoverUrl" class="w-16 h-16 rounded-full object-cover border-2 border-transparent group-hover:border-[#499BED] transition-all" />
+                            <div>
+                                <h4 class="text-white font-bold group-hover:text-[#499BED] transition-colors">@artist.Name</h4>
+                                <p class="text-xs text-gray-400 mt-1">Исполнитель</p>
+                            </div>
+                        </a>
+                    }
+                }
             </div>
-            <button class="w-full mt-6 py-3 rounded-xl border border-gray-600 text-gray-300 hover:bg-white hover:text-black font-bold transition-all">Все артисты</button>
+            <a asp-controller="Home" asp-action="Artists" class="block text-center w-full mt-6 py-3 rounded-xl border border-gray-600 text-gray-300 hover:bg-white hover:text-black font-bold transition-all">Все артисты</a>
         </div>
     </div>
 </div>
@@ -242,7 +235,7 @@
         <p class="text-blue-100 text-lg">Слушай музыку без рекламы, скачивай треки и наслаждайся высочайшим качеством звука.</p>
     </div>
     <div class="flex gap-4">
-        <a asp-controller="Home" asp-action="Premium" class="bg-white text-black font-bold py-4 px-8 rounded-full hover:scale-105 transition-transform shadow-xl">Попробовать бесплатно</a>
+        <a asp-controller="Home" asp-action="Premium" class="bg-white text-black font-bold py-4 px-8 rounded-full hover:scale-105 transition-transform shadow-xl">Попробовать Beatly Premium</a>
     </div>
 </section>
 

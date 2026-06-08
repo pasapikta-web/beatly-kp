@@ -143,35 +143,6 @@ namespace Beatly.Controllers
             return View(tracks ?? new List<Track>());
         }
 
-        public async Task<IActionResult> Artist(string name)
-        {
-            if (string.IsNullOrEmpty(name)) return NotFound();
-            SetNotificationCount();
-
-            var tracks = await _context.Tracks.Where(t => t.Artist == name).ToListAsync();
-            await SetLikedStatusAsync(tracks);
-            var jsonOptions = new JsonSerializerOptions { ReferenceHandler = ReferenceHandler.IgnoreCycles };
-            ViewBag.Playlist = JsonSerializer.Serialize(tracks, jsonOptions);
-
-            var user = await _userManager.GetUserAsync(User);
-            bool isFollowing = false;
-            if (user != null)
-            {
-                isFollowing = await _context.FollowedArtists
-                    .AnyAsync(fa => fa.UserId == user.Id && fa.ArtistName == name);
-            }
-            ViewBag.IsFollowing = isFollowing;
-            var viewModel = new ArtistProfileViewModel
-            {
-                ArtistName = name,
-                AvatarLetter = name.Substring(0, 1).ToUpper(),
-                FollowersCount = new Random().Next(15000, 150000),
-                Tracks = tracks
-            };
-
-            return View("ArtistProfile", viewModel);
-        }
-
         public async Task<IActionResult> Category(string type, string name)
         {
             SetNotificationCount();
@@ -250,16 +221,13 @@ namespace Beatly.Controllers
                     AvatarLetter = string.IsNullOrEmpty(fa.ArtistName) ? "?" : fa.ArtistName.Substring(0, 1).ToUpper()
                 })
                 .ToListAsync();
-
             var dbFavoriteAlbums = await _context.FavoriteAlbums
                 .Where(fa => fa.UserId == user.Id)
                 .ToListAsync();
-
             foreach (var album in dbFavoriteAlbums)
             {
                 var firstTrack = await _context.Tracks
                     .FirstOrDefaultAsync(t => t.Album == album.AlbumName && !string.IsNullOrEmpty(t.CoverUrl));
-
                 if (firstTrack != null)
                 {
                     var cleanCover = firstTrack.CoverUrl.Replace("wwwroot/", "").Replace("wwwroot\\", "").Replace("\\", "/");
@@ -320,7 +288,6 @@ namespace Beatly.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Json(new { success = false, message = "Авторизуйтесь для подписки" });
             if (string.IsNullOrEmpty(artistName)) return Json(new { success = false, message = "Имя исполнителя не указано" });
-
             var existingFollow = await _context.FollowedArtists
                 .FirstOrDefaultAsync(fa => fa.UserId == user.Id && fa.ArtistName == artistName);
             bool isFollowing;
@@ -350,7 +317,6 @@ namespace Beatly.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Json(new { success = false, message = "Авторизуйтесь для добавления в любимое" });
             if (string.IsNullOrEmpty(albumName)) return Json(new { success = false, message = "Название альбома не указано" });
-
             var existingAlbum = await _context.FavoriteAlbums
                 .FirstOrDefaultAsync(fa => fa.UserId == user.Id && fa.AlbumName == albumName);
             bool isLiked;
@@ -562,37 +528,22 @@ namespace Beatly.Controllers
 
         public async Task<IActionResult> Artists()
         {
+            SetNotificationCount();
             var tracks = await _context.Tracks.ToListAsync();
-            return View(tracks.Where(t => !string.IsNullOrEmpty(t.Artist)).GroupBy(t => t.Artist).ToList());
-        }
-
-        private async Task<string> SaveFile(IFormFile file, string folderName)
-        {
-            string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", folderName);
-            if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
-
-            string fileName = Guid.NewGuid().ToString() + "_" + file.FileName;
-            using (var stream = new FileStream(Path.Combine(uploadsFolder, fileName), FileMode.Create))
-            {
-                await file.CopyToAsync(stream);
-            }
-            return "/uploads/" + folderName + "/" + fileName;
+            var grouped = tracks
+                .Where(t => !string.IsNullOrEmpty(t.Artist))
+                .GroupBy(t => t.Artist!)
+                .ToList();
+            return View(grouped);
         }
 
         public async Task<IActionResult> ArtistDetails(string name)
         {
-            if (string.IsNullOrEmpty(name))
-            {
-                return NotFound();
-            }
+            if (string.IsNullOrEmpty(name)) return NotFound();
 
             var artistTracks = await _context.Tracks
                 .Where(t => t.Artist == name)
                 .ToListAsync();
-            if (!artistTracks.Any())
-            {
-                return NotFound();
-            }
 
             SetNotificationCount();
             await SetLikedStatusAsync(artistTracks);
@@ -603,12 +554,10 @@ namespace Beatly.Controllers
             var user = await _userManager.GetUserAsync(User);
             bool isFollowing = false;
             List<string> likedAlbumNames = new List<string>();
-
             if (user != null)
             {
                 isFollowing = await _context.FollowedArtists
                     .AnyAsync(fa => fa.UserId == user.Id && fa.ArtistName == name);
-
                 likedAlbumNames = await _context.FavoriteAlbums
                     .Where(fa => fa.UserId == user.Id)
                     .Select(fa => fa.AlbumName)
@@ -616,7 +565,6 @@ namespace Beatly.Controllers
             }
             ViewBag.IsFollowing = isFollowing;
             ViewBag.LikedAlbumNames = likedAlbumNames;
-
             var albumsData = artistTracks
                 .Where(t => !string.IsNullOrEmpty(t.Album))
                 .GroupBy(t => t.Album)
@@ -778,6 +726,7 @@ namespace Beatly.Controllers
                 await _userManager.AddClaimAsync(user, new Claim("Premium", "True"));
             }
 
+            await _context.SaveChangesAsync();
             await _userManager.UpdateAsync(user);
             await _signInManager.RefreshSignInAsync(user);
             _notificationService.AddNotification(
@@ -810,6 +759,19 @@ namespace Beatly.Controllers
             await _signInManager.RefreshSignInAsync(user);
 
             return RedirectToAction("Premium");
+        }
+
+        private async Task<string> SaveFile(IFormFile file, string folderName)
+        {
+            string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", folderName);
+            if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+
+            string fileName = Guid.NewGuid().ToString() + "_" + file.FileName;
+            using (var stream = new FileStream(Path.Combine(uploadsFolder, fileName), FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+            return "/uploads/" + folderName + "/" + fileName;
         }
     }
 }

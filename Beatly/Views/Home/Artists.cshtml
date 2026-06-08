@@ -20,7 +20,9 @@
         {
             <a asp-action="ArtistDetails" asp-route-name="@artist.Key" class="bg-[#181a20]/60 backdrop-blur-md p-6 rounded-[2rem] border border-white/5 hover:border-[#499BED]/30 hover:bg-[#1f222b] transition-all duration-300 text-center group cursor-pointer block transform hover:-translate-y-1 hover:shadow-xl hover:shadow-[#499BED]/5">
                 <div class="relative w-28 h-28 mx-auto mb-4 rounded-full bg-gradient-to-tr from-[#499BED] to-cyan-500 flex items-center justify-center shadow-lg shadow-[#499BED]/10 group-hover:shadow-[#499BED]/30 group-hover:scale-105 transition-all duration-300">
-                    <span class="text-3xl font-black text-white transform group-hover:rotate-6 transition-transform duration-300">@artist.Key[0]</span>
+                    <span class="text-3xl font-black text-white transform group-hover:rotate-6 transition-transform duration-300">
+                        @(string.IsNullOrEmpty(artist.Key) ? "?" : artist.Key.Trim().FirstOrDefault().ToString().ToUpper())
+                    </span>
                     <div class="absolute inset-0 rounded-full bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                         <span class="material-symbols-outlined text-white text-3xl">play_arrow</span>
                     </div>

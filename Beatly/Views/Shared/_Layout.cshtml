@@ -59,7 +59,7 @@
                 <span class="material-symbols-outlined">search</span> Поиск
             </a>
             <a href="@Url.Action("Favorites", "Home")" class="flex items-center gap-3 px-4 py-3 hover:bg-white/5 rounded-lg transition @(ViewContext.RouteData.Values["Action"]?.ToString() == "Favorites" ? "active-link" : "")">
-                <span class="material-symbols-outlined text-red-500">favorite</span> Любимые треки
+                <span class="material-symbols-outlined text-red-500">favorite</span> Медиатека 
             </a>
             <a href="@Url.Action("Create", "Home")" class="flex items-center gap-3 px-4 py-3 hover:bg-white/5 rounded-lg transition @(ViewContext.RouteData.Values["Action"]?.ToString() == "Create" ? "active-link" : "")">
                 <span class="material-symbols-outlined">add_circle</span> Добавить трек
